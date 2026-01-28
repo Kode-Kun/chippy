@@ -1,3 +1,17 @@
+/*
+ * C8ke : chip-8 emulator
+ * Copyright (C) 2026 Lui Sant'Ana Cardoso
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at
+ * your option) any later version. This program is distributed in the
+ * hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -21,8 +35,8 @@ int main(int argc, char **argv)
       filepath = optarg;
       break;
     case '?':
-      if(optopt == 'f') fprintf((FILE*)STDERR_FILENO, "Option -%c requires an argument.\n", optopt);
-      else if(isprint(optopt)) fprintf((FILE*)STDERR_FILENO, "Option -%c is not supported.\n", optopt);
+      if(optopt == 'f') fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+      else if(isprint(optopt)) fprintf(stderr, "Option -%c is not supported.\n", optopt);
       break;
     default:
       abort();
@@ -32,7 +46,7 @@ int main(int argc, char **argv)
   argv += optind;
 
   if(filepath)load_rom(filepath);
-  else printf("you forgot to provide a source file\n";
+  else printf("you forgot to provide a source file\n");
   
   return 0;
 }
@@ -43,8 +57,8 @@ int load_rom(char *filepath)
   FILE *src_fd;
 
   if ((src_fd = fopen(filepath, "r")) == NULL){
-    fprintf((FILE*)STDERR_FILENO, "%s", strerror(errno));
-    return 1;
+    perror(filepath);
+    exit(1);
   }
   printf("Loaded %s successfully :3\n", filepath);
   // actually load the rom into memory here :3
