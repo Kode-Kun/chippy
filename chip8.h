@@ -21,6 +21,7 @@
 #define STACK_SIZE    32
 #define SCREEN_WIDTH  64
 #define SCREEN_HEIGHT 32
+#define __line "--------------------------------"
 
 uint8_t  regs[16];
 uint8_t  mem[MEM_SIZE];
@@ -29,7 +30,7 @@ uint16_t stack[STACK_SIZE];
 uint16_t I = 0x0000;
 uint16_t opcode;
 
-int load_rom(char *filepath);
+int load_rom(char *filepath, size_t *filesize);
 void init_cpu();
 void execute();
 
