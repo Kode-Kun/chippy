@@ -17,18 +17,30 @@
 
 #include <stdint.h>
 
-#define MEM_SIZE      4096
-#define STACK_SIZE    32
-#define SCREEN_WIDTH  64
-#define SCREEN_HEIGHT 32
+#define MEM_SIZE          4096
+#define FLASH_MAX_SIZE    4096
+#define STACK_MAX_SIZE    256
+#define SCREEN_WIDTH      64
+#define SCREEN_HEIGHT     32
 #define __line "--------------------------------"
+
+typedef struct c8_stack_t{
+  uint16_t *restrict stack;
+  size_t size;
+}c8_stack_t;
 
 uint8_t  regs[16];
 uint8_t  mem[MEM_SIZE];
+uint8_t  flash[FLASH_MAX_SIZE];
 uint8_t  screen[SCREEN_WIDTH * SCREEN_HEIGHT];
-uint16_t stack[STACK_SIZE];
 uint16_t I = 0x0000;
 uint16_t opcode;
+c8_stack_t stack;
+
+/* stack-related functions */
+c8_stack_t stack_init();
+c8_stack_t stack_append(c8_stack_t stack);
+c8_stack_t stack_pop(c8_stack_t stack);
 
 int load_rom(char *filepath, size_t *filesize);
 void init_cpu();

@@ -52,7 +52,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-// loads ROM file into memory (uint8_t mem[MEM_SIZE])
+// loads ROM file into flash memory (uint8_t flash[FLASH_MAX_SIZE])
 int load_rom(char *filepath, size_t *filesize)
 {
   FILE *src_fd;
@@ -66,21 +66,21 @@ int load_rom(char *filepath, size_t *filesize)
   size_t fsize = ftell(src_fd);
   *filesize = fsize;
 
-  if (fsize > MEM_SIZE){
-    printf("ERROR: File \"%s\" too big to fit in memory (%d). Either recompile c8ke with a bigger MEM_SIZE or provide a smaller ROM.\n",
-	   filepath, MEM_SIZE);
+  if (fsize > FLASH_MAX_SIZE){
+    printf("ERROR: File \"%s\" too big to fit in memory (%d). Either recompile c8ke with a bigger FLASH_MAX_SIZE or provide a smaller ROM.\n",
+	   filepath, FLASH_MAX_SIZE);
     exit(1);
   }
 
   fseek(src_fd, 0, SEEK_SET);
-  fread(&mem, 1, fsize, src_fd);
+  fread(&flash, 1, fsize, src_fd);
 
   printf("Loaded %s (%zu bytes) successfully :3\n", filepath, fsize);
   // code for printing out the memory in hex, might come in handy for debugging later on
   /* printf("%s\n", __line); */
   /* printf("MEMORY:\n"); */
   /* for (int i = 0; i < fsize; i++){ */
-  /*   printf("%#X ", mem[i]); */
+  /*   printf("%#X ", flash[i]); */
   /* } */
   /* printf("\n%s\n", __line); */
 

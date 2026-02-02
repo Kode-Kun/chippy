@@ -4,4 +4,7 @@ TARGET=c8ke
 CFLAGS=-Wall -Wextra
 
 default:
+	${CC} ${SRC} -o ${TARGET} ${CFLAGS}
+
+debug:
 	${CC} ${SRC} -o ${TARGET} ${CFLAGS} -g
