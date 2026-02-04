@@ -1,6 +1,6 @@
 CC=cc
 SRC=chip8.c
-TARGET=c8ke
+TARGET=chippy
 RAYLIB_PATH=/opt/homebrew/Cellar/raylib/5.5/lib
 CFLAGS=-Wall -Wextra -L${RAYLIB_PATH} -lraylib
 

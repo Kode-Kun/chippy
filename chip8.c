@@ -60,7 +60,8 @@ int main(int argc, char **argv)
   InitWindow(SCREEN_WIDTH*10, SCREEN_HEIGHT*10, "c8ke");
   SetTargetFPS(60);
 
-  bool done_exec = false;
+  init_chip();
+  bool done_exec = false; //temporary; for debugging only
 
   while (!WindowShouldClose())
   {
@@ -94,6 +95,18 @@ int main(int argc, char **argv)
   /*   END OF WINDOWING   */
   
   return 0;
+}
+
+// initialize registers and stack
+void init_chip()
+{
+  for(int i = 0; i < 16; i++){
+    regs[i] = 0x0000;
+  }
+  I = 0x0000;
+  PC = 0x0000;
+  stack_size = 1;
+  stack = malloc(stack_size * sizeof(uint16_t));
 }
 
 // loads ROM file into flash memory (uint8_t flash[FLASH_MAX_SIZE])
