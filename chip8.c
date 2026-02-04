@@ -1,5 +1,5 @@
 /*
- * C8ke : chip-8 emulator
+ * chippy : chip-8 emulator
  * Copyright (C) 2026 Lui Sant'Ana Cardoso
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 
   /*   START OF WINDOWING   */
 
-  InitWindow(SCREEN_WIDTH*10, SCREEN_HEIGHT*10, "c8ke");
+  InitWindow(SCREEN_WIDTH*10, SCREEN_HEIGHT*10, "chippy");
   SetTargetFPS(60);
 
   init_chip();
@@ -124,7 +124,7 @@ int load_rom(char *filepath, size_t *filesize)
   *filesize = fsize;
 
   if (fsize > FLASH_MAX_SIZE){
-    printf("ERROR: File \"%s\" too big to fit in memory (%d). Either recompile c8ke with a bigger FLASH_MAX_SIZE or provide a smaller ROM.\n",
+    printf("ERROR: File \"%s\" too big to fit in memory (%d).\n",
 	   filepath, FLASH_MAX_SIZE);
     exit(1);
   }
