@@ -34,7 +34,7 @@ uint8_t  mem[MEM_SIZE];
 uint8_t  flash[FLASH_MAX_SIZE];
 uint8_t  screen[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16_t I = 0x0000;
-uint16_t opcode;
+uint16_t PC = 0x0000;
 c8_stack_t stack;
 
 /* stack-related functions */
@@ -44,6 +44,6 @@ c8_stack_t stack_pop(c8_stack_t stack);
 
 int load_rom(char *filepath, size_t *filesize);
 void init_cpu();
-void execute();
+uint16_t fetch();
 
 #endif

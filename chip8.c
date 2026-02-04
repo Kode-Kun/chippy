@@ -20,11 +20,13 @@
 #include <errno.h>
 #include <ctype.h>
 
+#include "raylib.h"
 #include "chip8.h"
 #include "font.h"
 
 int main(int argc, char **argv)
 {
+  /*   parsing args   */
   char *filepath = NULL;
 
   int ch;
@@ -45,9 +47,51 @@ int main(int argc, char **argv)
   argc -= optind;
   argv += optind;
 
+  /*   getting ROM file from args   */
   size_t filesize = 0;
   if(filepath)load_rom(filepath, &filesize);
-  else printf("you forgot to provide a source file\n");
+  else{
+    printf("you forgot to provide a source file\n");
+    exit(1);
+  }
+
+  /*   START OF WINDOWING   */
+
+  InitWindow(SCREEN_WIDTH*10, SCREEN_HEIGHT*10, "c8ke");
+  SetTargetFPS(60);
+
+  bool done_exec = false;
+
+  while (!WindowShouldClose())
+  {
+    BeginDrawing();
+    ClearBackground(BLACK);
+
+    /*   EXECUTION   */
+    if(!done_exec){
+      uint16_t opcode = fetch();
+      printf("flash[PC]: %#x\nflash[PC+1]: %#x\nopcode: %#x\n",
+	     flash[PC-2], flash[PC-1], opcode);
+      if(PC > filesize) done_exec = true;
+
+      if((opcode >> 12) == 0x6){
+	uint8_t reg = ((opcode >> 8) & ~(0x60));
+	uint8_t val = opcode & 0x00FF;
+	regs[reg] = val;
+      }
+    }
+
+    DrawText("Chip8 emulator", 10, 10, 40, RAYWHITE);
+    DrawText(TextFormat("Registers: %#X %#X %#X %#X",
+			regs[0], regs[1], regs[2], regs[3]), 10, 60, 20, RAYWHITE);
+    
+
+    EndDrawing();
+  }
+
+  CloseWindow();        // Close window and OpenGL context
+
+  /*   END OF WINDOWING   */
   
   return 0;
 }
@@ -86,3 +130,13 @@ int load_rom(char *filepath, size_t *filesize)
 
   return 0;
 }
+
+uint16_t fetch()
+{
+  uint16_t opcode = ((uint16_t)flash[PC] << 8) | ((uint16_t)flash[PC+1]);
+  PC += 2;
+
+  return opcode;
+}
+
+

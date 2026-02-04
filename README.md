@@ -6,7 +6,7 @@
 It aims to be fully compatible with, at the very least, any program written using the [octo](https://github.com/JohnEarnest/Octo) assembler.
 
 ## Building
-`c8ke`'s only external dependency is [raylib](https://www.raylib.com/). To build it, install raylib on your machine and copy [*raylib.h*](https://github.com/raysan5/raylib/blob/master/src/raylib.h) into this repo's directory.
+`c8ke`'s only external dependency is [raylib](https://www.raylib.com/). To build it, install raylib on your machine, change the `RAYLIB_PATH` variable in the Makefile to the directory containing your raylib object, and copy [*raylib.h*](https://github.com/raysan5/raylib/blob/master/src/raylib.h) into this repo's directory.
 Then, simply run
 ```bash
 make
