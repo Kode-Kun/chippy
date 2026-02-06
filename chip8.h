@@ -24,19 +24,22 @@
 #define SCREEN_HEIGHT     32
 #define __line "--------------------------------"
 
+typedef struct{
+  uint16_t stack[STACK_MAX_SIZE];
+  int top;
+} c8_stack_t;
+
 uint8_t  regs[16];
 uint8_t  mem[MEM_SIZE];
 uint8_t  flash[FLASH_MAX_SIZE];
 uint8_t  screen[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16_t I;
 uint16_t PC;
-uint16_t *stack;
-size_t stack_size;
 
 /* stack-related functions */
-void stack_init(uint16_t *stack, size_t size);
-void stack_append(uint16_t *stack, size_t size);
-void stack_pop(uint16_t *stack, size_t size);
+c8_stack_t stack_init();
+uint8_t stack_push(c8_stack_t *stack, uint16_t val);
+uint8_t stack_pop(c8_stack_t *stack);
 
 int load_rom(char *filepath, size_t *filesize);
 void init_chip();

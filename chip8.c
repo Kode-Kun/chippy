@@ -56,11 +56,11 @@ int main(int argc, char **argv)
   }
 
   /*   START OF WINDOWING   */
-
   InitWindow(SCREEN_WIDTH*10, SCREEN_HEIGHT*10, "chippy");
   SetTargetFPS(60);
 
   init_chip();
+  c8_stack_t stack = stack_init();
   bool done_exec = false; //temporary; for debugging only
 
   while (!WindowShouldClose())
@@ -75,6 +75,11 @@ int main(int argc, char **argv)
 	     flash[PC-2], flash[PC-1], opcode);
       if(PC > filesize) done_exec = true;
 
+      if(stack_push(&stack, opcode) != 0){
+	fprintf(stderr, "ERROR: stack overflow.\n");
+	exit(1);
+      }
+      
       if((opcode >> 12) == 0x6){
 	uint8_t reg = ((opcode >> 8) & ~(0x60));
 	uint8_t val = opcode & 0x00FF;
@@ -82,10 +87,25 @@ int main(int argc, char **argv)
       }
     }
 
+    if(IsKeyPressed(KEY_P)){
+      if(stack_pop(&stack) != 0){
+	fprintf(stderr, "ERROR: attempting to pop empty stack.\n");
+	exit(1);
+      }
+    }
+    if(IsKeyPressed(KEY_O)){
+      if(stack_push(&stack, 0xFFFF) != 0){
+	fprintf(stderr, "ERROR: stack overflow.\n");
+	exit(1);
+      }
+    }
+
     DrawText("Chip8 emulator", 10, 10, 40, RAYWHITE);
     DrawText(TextFormat("Registers: %#X %#X %#X %#X",
 			regs[0], regs[1], regs[2], regs[3]), 10, 60, 20, RAYWHITE);
-    
+    DrawText(TextFormat("Stack: %#X %#X %#X %#X",
+			stack.stack[0], stack.stack[1], stack.stack[2], stack.stack[3]),
+	     10, 90, 20, RAYWHITE);
 
     EndDrawing();
   }
@@ -105,8 +125,6 @@ void init_chip()
   }
   I = 0x0000;
   PC = 0x0000;
-  stack_size = 1;
-  stack = malloc(stack_size * sizeof(uint16_t));
 }
 
 // loads ROM file into flash memory (uint8_t flash[FLASH_MAX_SIZE])
@@ -152,4 +170,27 @@ uint16_t fetch()
   return opcode;
 }
 
+c8_stack_t stack_init()
+{
+  c8_stack_t stack;
+  stack.top = -1;
+  return stack;
+}
 
+// returns 0 on success, returns 1 on stack overflow
+uint8_t stack_push(c8_stack_t *stack, uint16_t val)
+{
+  if(stack->top == (STACK_MAX_SIZE - 1)) return 1;
+  stack->stack[stack->top + 1] = val;
+  stack->top++;
+  return 0;
+}
+
+// returns 0 on success, returns 1 when attempting to pop empty stack
+uint8_t stack_pop(c8_stack_t *stack)
+{
+  if(stack->top == -1) return 1;
+  stack->stack[stack->top] = 0;
+  stack->top--;
+  return 0;
+}
