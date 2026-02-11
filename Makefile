@@ -1,11 +1,20 @@
 CC=cc
 SRC=chip8.c
-TARGET=chippy
+EXEC=chippy
 RAYLIB_PATH=/opt/homebrew/Cellar/raylib/5.5/lib
-CFLAGS=-Wall -Wextra -L${RAYLIB_PATH} -lraylib
+CFLAGS=-Wall -Wextra -L$(RAYLIB_PATH) -lraylib
+FRAMEWORKS = -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
 
-default:
-	${CC} ${SRC} -o ${TARGET} ${CFLAGS}
+all: $(EXEC)
 
-debug:
-	${CC} ${SRC} -o ${TARGET} ${CFLAGS} -g
+$(EXEC): $(SRC)
+	$(CC) $(SRC) -o $(EXEC) $(CFLAGS) $(FRAMERWORKS)
+
+debug: $(SRC)
+	$(CC) $(SRC) -o $(TARGET) $(CFLAGS) -g $(FRAMERWORKS)
+
+clean:
+	rm -f $(EXEC)
+
+
+.PHONY: all debug clean

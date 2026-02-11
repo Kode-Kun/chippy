@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   size_t filesize = 0;
   if(filepath)load_rom(filepath, &filesize);
   else{
-    printf("you forgot to provide a source file\n");
+    fprintf(stderr, "ERROR: you forgot to provide a source file\n");
     exit(1);
   }
 
@@ -76,7 +76,6 @@ int main(int argc, char **argv)
       if(PC > filesize) done_exec = true;
 
       if(stack_push(&stack, opcode) != 0){
-	fprintf(stderr, "ERROR: stack overflow.\n");
 	exit(1);
       }
       
@@ -89,13 +88,11 @@ int main(int argc, char **argv)
 
     if(IsKeyPressed(KEY_P)){
       if(stack_pop(&stack) != 0){
-	fprintf(stderr, "ERROR: attempting to pop empty stack.\n");
 	exit(1);
       }
     }
     if(IsKeyPressed(KEY_O)){
       if(stack_push(&stack, 0xFFFF) != 0){
-	fprintf(stderr, "ERROR: stack overflow.\n");
 	exit(1);
       }
     }
@@ -117,7 +114,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-// initialize registers and stack
+// initialize registers and clocks
 void init_chip()
 {
   for(int i = 0; i < 16; i++){
@@ -142,7 +139,7 @@ int load_rom(char *filepath, size_t *filesize)
   *filesize = fsize;
 
   if (fsize > FLASH_MAX_SIZE){
-    printf("ERROR: File \"%s\" too big to fit in memory (%d).\n",
+    fprintf(stderr, "ERROR: File \"%s\" too big to fit in memory (%d).\n",
 	   filepath, FLASH_MAX_SIZE);
     exit(1);
   }
@@ -180,7 +177,10 @@ c8_stack_t stack_init()
 // returns 0 on success, returns 1 on stack overflow
 uint8_t stack_push(c8_stack_t *stack, uint16_t val)
 {
-  if(stack->top == (STACK_MAX_SIZE - 1)) return 1;
+  if(stack->top == (STACK_MAX_SIZE - 1)){
+    fprintf(stderr, "ERROR: stack overflow.\n");
+    return 1;
+  }
   stack->stack[stack->top + 1] = val;
   stack->top++;
   return 0;
@@ -189,7 +189,10 @@ uint8_t stack_push(c8_stack_t *stack, uint16_t val)
 // returns 0 on success, returns 1 when attempting to pop empty stack
 uint8_t stack_pop(c8_stack_t *stack)
 {
-  if(stack->top == -1) return 1;
+  if(stack->top == -1){
+    fprintf(stderr, "ERROR: attempting to pop empty stack.\n");
+    return 1;
+  }
   stack->stack[stack->top] = 0;
   stack->top--;
   return 0;
