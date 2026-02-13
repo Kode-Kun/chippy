@@ -12,4 +12,4 @@ Then, simply run
 make
 ```
 
-`chippy` is licensed under the GPL-3.0 (see LICENSE.md)
+`chippy` is licensed under the GPL-3.0 (see LICENSE.md).
