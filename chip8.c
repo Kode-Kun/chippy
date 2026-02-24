@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   SetTargetFPS(60);
 
   init_chip();
-  c8_stack_t stack = stack_init();
+  c8_stack_t s = stack_init();
   bool done_exec = false; //temporary; for debugging only
 
   while (!WindowShouldClose())
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 	     flash[PC-2], flash[PC-1], opcode);
       if(PC > filesize) done_exec = true;
 
-      if(stack_push(&stack, opcode) != 0){
+      if(stack_push(&s, opcode) != 0){
 	exit(1);
       }
       
@@ -86,22 +86,24 @@ int main(int argc, char **argv)
       }
     }
 
+    // stack debugging
     if(IsKeyPressed(KEY_P)){
-      if(stack_pop(&stack) != 0){
+      if(stack_pop(&s) != 0){
 	exit(1);
       }
     }
     if(IsKeyPressed(KEY_O)){
-      if(stack_push(&stack, 0xFFFF) != 0){
+      if(stack_push(&s, 0xFFFF) != 0){
 	exit(1);
       }
     }
 
+    // more debugging
     DrawText("Chip8 emulator", 10, 10, 40, RAYWHITE);
     DrawText(TextFormat("Registers: %#X %#X %#X %#X",
 			regs[0], regs[1], regs[2], regs[3]), 10, 60, 20, RAYWHITE);
     DrawText(TextFormat("Stack: %#X %#X %#X %#X",
-			stack.stack[0], stack.stack[1], stack.stack[2], stack.stack[3]),
+			s.stack[0], s.stack[1], s.stack[2], s.stack[3]),
 	     10, 90, 20, RAYWHITE);
 
     EndDrawing();
@@ -175,25 +177,25 @@ c8_stack_t stack_init()
 }
 
 // returns 0 on success, returns 1 on stack overflow
-uint8_t stack_push(c8_stack_t *stack, uint16_t val)
+uint8_t stack_push(c8_stack_t *s, uint16_t val)
 {
-  if(stack->top == (STACK_MAX_SIZE - 1)){
+  if(s->top == (STACK_MAX_SIZE - 1)){
     fprintf(stderr, "ERROR: stack overflow.\n");
     return 1;
   }
-  stack->stack[stack->top + 1] = val;
-  stack->top++;
+  s->stack[s->top + 1] = val;
+  s->top++;
   return 0;
 }
 
 // returns 0 on success, returns 1 when attempting to pop empty stack
-uint8_t stack_pop(c8_stack_t *stack)
+uint8_t stack_pop(c8_stack_t *s)
 {
-  if(stack->top == -1){
+  if(s->top == -1){
     fprintf(stderr, "ERROR: attempting to pop empty stack.\n");
     return 1;
   }
-  stack->stack[stack->top] = 0;
-  stack->top--;
+  s->stack[s->top] = 0;
+  s->top--;
   return 0;
 }
