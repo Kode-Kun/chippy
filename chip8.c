@@ -78,7 +78,7 @@ int main(int argc, char **argv)
       if(stack_push(&s, opcode) != 0){
 	exit(1);
       }
-      
+
       if((opcode >> 12) == 0x6){
 	uint8_t reg = ((opcode >> 8) & ~(0x60));
 	uint8_t val = opcode & 0x00FF;
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
   CloseWindow();        // Close window and OpenGL context
 
   /*   END OF WINDOWING   */
-  
+
   return 0;
 }
 
