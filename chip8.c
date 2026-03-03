@@ -66,7 +66,6 @@ int main(int argc, char **argv)
   while (!WindowShouldClose())
   {
     BeginDrawing();
-    ClearBackground(BLACK);
 
     /*   EXECUTION   */
     if(!done_exec){
@@ -79,7 +78,11 @@ int main(int argc, char **argv)
 	exit(1);
       }
 
-      if((opcode >> 12) == 0x6){
+      if(opcode == 0x00E0){
+	ClearBackground(BLACK);
+	fprintf(stderr, "INFO: cleared background successfully!\n"); 
+      }
+      else if((opcode >> 12) == 0x6){
 	uint8_t reg = ((opcode >> 8) & ~(0x60));
 	uint8_t val = opcode & 0x00FF;
 	regs[reg] = val;

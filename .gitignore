@@ -4,4 +4,7 @@ raylib.h
 main
 chippy
 test
-
+write
+rom.c8
+include/
+lib/

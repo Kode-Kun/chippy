@@ -3,8 +3,17 @@ Checklist of every part of the chip-8 specification that need to be implemented.
 Some can be implemented in a vaccuum, some depend on other parts/features.
 
 ## Operations
-- [ ] 0NNN - Call routine at address NNN
-- [ ] 00E0 - `disp_clear()`
+### Symbols
+NNN: address
+NN: 8-bit constant
+N: 4-bit constant
+X and Y: 4-bit register identifier
+PC : Program Counter
+I : 12bit register (For memory address) (Similar to void pointer);
+VN: One of the 16 available variables. N may be 0 to F (hexadecimal);
+
+- [ ] 0NNN - Call routine at address NNN  **(is this necessary?)**
+- [X] 00E0 - `disp_clear()`
 - [ ] 00EE - `return;`
 - [ ] 1NNN - `goto NNN;`
 - [ ] 2NNN - `*(0xNNN)()`
