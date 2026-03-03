@@ -62,3 +62,7 @@ set_BCD(Vx)
 - [X] Stack
 - [X] Flash / ROM loading
 - [X] Memory / RAM
+
+## References
+- https://chip8.gulrak.net/
+- [wikipedia](https://en.wikipedia.org/wiki/CHIP-8#Opcode_table)
