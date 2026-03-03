@@ -70,8 +70,8 @@ int main(int argc, char **argv)
     /*   EXECUTION   */
     if(!done_exec){
       uint16_t opcode = fetch();
-      printf("flash[PC]: %#x\nflash[PC+1]: %#x\nopcode: %#x\n",
-	     flash[PC-2], flash[PC-1], opcode);
+      printf("flash[PC]: %#x\nflash[PC+1]: %#x\nopcode: %#x\nPC: %d\n",
+	     flash[PC-2], flash[PC-1], opcode, PC);
       if(PC > filesize) done_exec = true;
 
       if(stack_push(&s, opcode) != 0){
@@ -81,6 +81,10 @@ int main(int argc, char **argv)
       if(opcode == 0x00E0){
 	ClearBackground(BLACK);
 	fprintf(stderr, "INFO: cleared background successfully!\n"); 
+      }
+      else if((opcode >> 12) == 0x1){
+	uint16_t address = opcode & 0x0FFF;
+	PC = address;
       }
       else if((opcode >> 12) == 0x6){
 	uint8_t reg = ((opcode >> 8) & ~(0x60));
