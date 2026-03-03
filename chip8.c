@@ -74,16 +74,20 @@ int main(int argc, char **argv)
 	     flash[PC-2], flash[PC-1], opcode, PC);
       if(PC > filesize) done_exec = true;
 
-      if(stack_push(&s, opcode) != 0){
-	exit(1);
-      }
-
       if(opcode == 0x00E0){
 	ClearBackground(BLACK);
-	fprintf(stderr, "INFO: cleared background successfully!\n"); 
+      }
+      else if(opcode == 0x00EE){
+	uint16_t address = stack_pop(&s);
+	PC = address;
       }
       else if((opcode >> 12) == 0x1){
 	uint16_t address = opcode & 0x0FFF;
+	PC = address;
+      }
+      else if((opcode >> 12) == 0x2){
+	uint16_t address = opcode & 0x0FFF;
+	stack_push(&s, PC);
 	PC = address;
       }
       else if((opcode >> 12) == 0x6){
@@ -95,14 +99,10 @@ int main(int argc, char **argv)
 
     // stack debugging
     if(IsKeyPressed(KEY_P)){
-      if(stack_pop(&s) != 0){
-	exit(1);
-      }
+      stack_pop(&s);
     }
     if(IsKeyPressed(KEY_O)){
-      if(stack_push(&s, 0xFFFF) != 0){
-	exit(1);
-      }
+      stack_push(&s, 0xFFFF);
     }
 
     // more debugging
@@ -184,25 +184,26 @@ c8_stack_t stack_init()
 }
 
 // returns 0 on success, returns 1 on stack overflow
-uint8_t stack_push(c8_stack_t *s, uint16_t val)
+uint16_t stack_push(c8_stack_t *s, uint16_t val)
 {
   if(s->top == (STACK_MAX_SIZE - 1)){
     fprintf(stderr, "ERROR: stack overflow.\n");
-    return 1;
+    return 0;
   }
   s->stack[s->top + 1] = val;
   s->top++;
-  return 0;
+  return val;
 }
 
 // returns 0 on success, returns 1 when attempting to pop empty stack
-uint8_t stack_pop(c8_stack_t *s)
+uint16_t stack_pop(c8_stack_t *s)
 {
   if(s->top == -1){
     fprintf(stderr, "ERROR: attempting to pop empty stack.\n");
-    return 1;
+    return 0;
   }
+  uint16_t ret = s->stack[s->top];
   s->stack[s->top] = 0;
   s->top--;
-  return 0;
+  return ret;
 }

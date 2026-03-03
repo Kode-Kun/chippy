@@ -38,8 +38,8 @@ uint16_t PC;
 
 /* stack-related functions */
 c8_stack_t stack_init();
-uint8_t stack_push(c8_stack_t *stack, uint16_t val);
-uint8_t stack_pop(c8_stack_t *stack);
+uint16_t stack_push(c8_stack_t *stack, uint16_t val);
+uint16_t stack_pop(c8_stack_t *stack);
 
 int load_rom(char *filepath, size_t *filesize);
 void init_chip();

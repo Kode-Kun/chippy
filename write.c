@@ -27,16 +27,17 @@ int main()
 {
   char *filename = "rom.c8";
   FILE *romf     = fopen(filename, "w");
-  uint8_t rom[] =  { 0x61, 0xAE, 0x10, 0x06, 0x60, 0x69,
-		     0x00, 0xE0, 0x00, 0xE0, 0x00, 0xE0 };
+  uint8_t rom[] =  { 0x20, 0x0A, 0x10, 0x0E, 0x60, 0x69,
+                     0x00, 0xE0, 0x00, 0xE0, 0x61, 0x68,
+                     0x00, 0xEE, 0x00, 0xE0 };
   if(!romf){
     perror("fopen");
     exit(1);
   }
 
-  if(fwrite(rom, ARRAY_SIZE(rom), sizeof(uint8_t), romf) != (ARRAY_SIZE(rom)*sizeof(uint8_t))){
-      fprintf(stderr, "ERROR: failed to write rom to %s\n", filename);
-      exit(1);
+  if(fwrite(rom, 1, ARRAY_SIZE(rom), romf) != ARRAY_SIZE(rom)){
+    fprintf(stderr, "ERROR: failed to write rom to %s\n", filename);
+    exit(1);
   }
 
   fclose(romf);

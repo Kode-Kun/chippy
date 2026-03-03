@@ -14,9 +14,9 @@ VN: One of the 16 available variables. N may be 0 to F (hexadecimal);
 
 - [ ] 0NNN - Call routine at address NNN  **(is this necessary?)**
 - [X] 00E0 - `disp_clear()`
-- [ ] 00EE - `return;`
+- [X] 00EE - `return;`
 - [X] 1NNN - `goto NNN;`
-- [ ] 2NNN - `*(0xNNN)()`
+- [X] 2NNN - `*(0xNNN)()`
 - [ ] 3XNN - `if (Vx == NN)`
 - [ ] 4XNN - `if (Vx != NN)`
 - [ ] 5XY0 - `if (Vx == Vy)`
