@@ -24,6 +24,8 @@
 #include "chip8.h"
 #include "font.h"
 
+#define OP_STARTS_WITH(op, x) (op >> 12) == x
+
 int main(int argc, char **argv)
 {
   /*   parsing args   */
@@ -57,7 +59,7 @@ int main(int argc, char **argv)
 
   /*   START OF WINDOWING   */
   InitWindow(SCREEN_WIDTH*10, SCREEN_HEIGHT*10, "chippy");
-  SetTargetFPS(60);
+  SetTargetFPS(120);
 
   init_chip();
   c8_stack_t s = stack_init();
@@ -81,22 +83,41 @@ int main(int argc, char **argv)
 	uint16_t address = stack_pop(&s);
 	PC = address;
       }
-      else if((opcode >> 12) == 0x1){
+      else if(OP_STARTS_WITH(opcode, 0x1)){
 	uint16_t address = opcode & 0x0FFF;
 	PC = address;
       }
-      else if((opcode >> 12) == 0x2){
+      else if(OP_STARTS_WITH(opcode, 0x2)){
 	uint16_t address = opcode & 0x0FFF;
 	stack_push(&s, PC);
 	PC = address;
       }
-      else if((opcode >> 12) == 0x6){
+      else if(OP_STARTS_WITH(opcode, 0x3)){
+	uint8_t reg = ((opcode >> 8) & ~(0x30));
+	uint8_t val = opcode & 0x00FF;
+	if(regs[reg] == val) PC += 2;
+      }
+      else if(OP_STARTS_WITH(opcode, 0x4)){
+	uint8_t reg = ((opcode >> 8) & ~(0x40));
+	uint8_t val = opcode & 0x00FF;
+	if(regs[reg] != val) PC += 2;
+      }
+      else if(OP_STARTS_WITH(opcode, 0x5)){
+	uint8_t regx = ((opcode >> 8) & ~(0x50));
+	uint8_t regy = (opcode >> 4) & 0xF;
+	if(regs[regx] == regs[regy]) PC += 2;
+      }
+      else if(OP_STARTS_WITH(opcode, 0x6)){
 	uint8_t reg = ((opcode >> 8) & ~(0x60));
 	uint8_t val = opcode & 0x00FF;
 	regs[reg] = val;
       }
+      else if(OP_STARTS_WITH(opcode, 0x7)){
+	uint8_t reg = ((opcode >> 8) & ~(0x70));
+	uint8_t val = opcode & 0x00FF;
+	regs[reg] += val;
+      }
     }
-
     // stack debugging
     if(IsKeyPressed(KEY_P)){
       stack_pop(&s);

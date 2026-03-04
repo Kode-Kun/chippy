@@ -13,15 +13,15 @@ I : 12bit register (For memory address) (Similar to void pointer);
 VN: One of the 16 available variables. N may be 0 to F (hexadecimal);
 
 - [ ] 0NNN - Call routine at address NNN  **(is this necessary?)**
-- [X] 00E0 - `disp_clear()`
-- [X] 00EE - `return;`
-- [X] 1NNN - `goto NNN;`
-- [X] 2NNN - `*(0xNNN)()`
-- [ ] 3XNN - `if (Vx == NN)`
-- [ ] 4XNN - `if (Vx != NN)`
-- [ ] 5XY0 - `if (Vx == Vy)`
-- [X] 6XNN - `Vx = NN`
-- [ ] 7XNN - `Vx += NN`
+- [x] 00E0 - `disp_clear()`
+- [x] 00EE - `return;`
+- [x] 1NNN - `goto NNN;`
+- [x] 2NNN - `*(0xNNN)()`
+- [x] 3XNN - `if (Vx == NN)`
+- [x] 4XNN - `if (Vx != NN)`
+- [x] 5XY0 - `if (Vx == Vy)`
+- [x] 6XNN - `Vx = NN`
+- [x] 7XNN - `Vx += NN`
 - [ ] 8XY0 - `Vx = Vy`
 - [ ] 8XY1 - `Vx |= Vy`
 - [ ] 8XY2 - `Vx &= Vy`
@@ -59,9 +59,9 @@ set_BCD(Vx)
 - [ ] Delay Timer
 - [ ] Sound Timer
 - [ ] Input through Hex keyboard
-- [X] Stack
-- [X] Flash / ROM loading
-- [X] Memory / RAM
+- [x] Stack
+- [x] Flash / ROM loading
+- [x] Memory / RAM
 
 ## References
 - https://chip8.gulrak.net/
