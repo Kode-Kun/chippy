@@ -23,22 +23,32 @@
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
+//utility function to always write in big-endian
+uint8_t write_be16(FILE *f, uint16_t v)
+{
+  uint8_t be[2];
+  be[0] = (v >> 8) & 0xFF;
+  be[1] = v & 0xFF;
+  if(fwrite(be, 1, 2, f) != 2) return 1;
+  return 0;
+}
+
 int main()
 {
   char *filename = "rom.c8";
   FILE *romf     = fopen(filename, "w");
-  uint8_t rom[] =  { 0x20, 0x10, 0x31, 0x68, 0x60, 0x30,
-                     0x70, 0x01, 0x00, 0xE0,
-                     0x30, 0x69, 0x10, 0x06, 0x10, 0x14,
-                     0x62, 0x68, 0x00, 0xEE, 0x00, 0xE0 };
+  uint16_t rom[] =  { 0x2010, 0x3168, 0x6030, 0x7001, 0x00E0,
+		      0x3069, 0x1006, 0x1014, 0x6268, 0x00EE, 0x00E0 };
   if(!romf){
     perror("fopen");
     exit(1);
   }
 
-  if(fwrite(rom, 1, ARRAY_SIZE(rom), romf) != ARRAY_SIZE(rom)){
-    fprintf(stderr, "ERROR: failed to write rom to %s\n", filename);
-    exit(1);
+  for(int i = 0; i < ARRAY_SIZE(rom); i++){
+    if(write_be16(romf, rom[i]) != 0){
+      fprintf(stderr, "ERROR: failed to write rom to %s\n", filename);
+      exit(1);
+    }
   }
 
   fclose(romf);
