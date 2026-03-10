@@ -5,9 +5,10 @@ INCLUDE=./include
 CFLAGS=-Wall -Wextra
 
 UNAME_S := $(shell uname -s)
+WD := $(shell pwd)
 
 ifeq ($(UNAME_S),Linux)
-	RAYLIB_PATH=/home/kode/src/chippy/lib
+	RAYLIB_PATH=$(WD)/lib
 	LDFLAGS=-L$(RAYLIB_PATH) -Wl,-rpath=$(RAYLIB_PATH) -lraylib
 endif
 

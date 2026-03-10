@@ -6,8 +6,14 @@
 It aims to be fully compatible with, at the very least, any program written using the [octo](https://github.com/JohnEarnest/Octo) assembler.
 
 ## Building
-`chippy`'s only external dependency is [raylib](https://www.raylib.com/). To build it, download raylib on your machine, change the `RAYLIB_PATH` variable in the Makefile to the `lib/` directory and `INCLUDE` to `include/`, and copy [*raylib.h*](https://github.com/raysan5/raylib/blob/master/src/raylib.h) into this repo's directory.
+`chippy`'s only external dependency is [raylib](https://www.raylib.com/). 
+### Linux
+To build it on Linux, download raylib on your machine, copy the `lib/` directory and `include/` directories into this repo's directory.
+### Mac
+To build it on mac, install raylib on your machine with homebrew
+
 Then, simply run
+
 ```bash
 make
 ```
