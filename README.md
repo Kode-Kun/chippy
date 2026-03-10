@@ -6,7 +6,7 @@
 It aims to be fully compatible with, at the very least, any program written using the [octo](https://github.com/JohnEarnest/Octo) assembler.
 
 ## Building
-`chippy`'s only external dependency is [raylib](https://www.raylib.com/). 
+`chippy`'s only external dependency is [raylib](https://www.raylib.com/).
 ### Linux
 To build it on Linux, download raylib on your machine, copy the `lib/` directory and `include/` directories into this repo's directory.
 ### Mac
