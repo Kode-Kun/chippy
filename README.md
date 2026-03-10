@@ -11,6 +11,7 @@ It aims to be fully compatible with, at the very least, any program written usin
 To build it on Linux, download raylib on your machine, then copy the `lib/` and `include/` directories into this repo's directory.
 ### Mac
 To build it on mac, install raylib on your machine with homebrew
+
 Then, simply run
 
 ```bash
