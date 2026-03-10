@@ -25,6 +25,7 @@
 #include "font.h"
 
 #define OP_STARTS_WITH(op, x) (op >> 12) == x
+#define OP_ENDS_WITH(op, x) (op & 0xF) == x
 
 int main(int argc, char **argv)
 {
@@ -51,7 +52,7 @@ int main(int argc, char **argv)
 
   /*   getting ROM file from args   */
   size_t filesize = 0;
-  if(filepath)load_rom(filepath, &filesize);
+  if(filepath) load_rom(filepath, &filesize);
   else{
     fprintf(stderr, "ERROR: you forgot to provide a source file\n");
     exit(1);
@@ -118,6 +119,7 @@ int main(int argc, char **argv)
 	regs[reg] += val;
       }
     }
+
     // stack debugging
     if(IsKeyPressed(KEY_P)){
       stack_pop(&s);
@@ -142,16 +144,6 @@ int main(int argc, char **argv)
   /*   END OF WINDOWING   */
 
   return 0;
-}
-
-// initialize registers and clocks
-void init_chip()
-{
-  for(int i = 0; i < 16; i++){
-    regs[i] = 0x0000;
-  }
-  I = 0x0000;
-  PC = 0x0000;
 }
 
 // loads ROM file into flash memory (uint8_t flash[FLASH_MAX_SIZE])
@@ -189,6 +181,17 @@ int load_rom(char *filepath, size_t *filesize)
   return 0;
 }
 
+// initialize registers and clocks
+void init_chip()
+{
+  for(int i = 0; i < 16; i++){
+    regs[i] = 0x0000;
+  }
+  I = 0x0000;
+  PC = 0x0000;
+}
+
+
 uint16_t fetch()
 {
   uint16_t opcode = ((uint16_t)flash[PC] << 8) | ((uint16_t)flash[PC+1]);
@@ -204,7 +207,7 @@ c8_stack_t stack_init()
   return stack;
 }
 
-// returns 0 on success, returns 1 on stack overflow
+// returns val on success, returns 1 on stack overflow
 uint16_t stack_push(c8_stack_t *s, uint16_t val)
 {
   if(s->top == (STACK_MAX_SIZE - 1)){
@@ -216,7 +219,7 @@ uint16_t stack_push(c8_stack_t *s, uint16_t val)
   return val;
 }
 
-// returns 0 on success, returns 1 when attempting to pop empty stack
+// returns popped value on success, returns 0 when attempting to pop empty stack
 uint16_t stack_pop(c8_stack_t *s)
 {
   if(s->top == -1){
