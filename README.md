@@ -8,10 +8,9 @@ It aims to be fully compatible with, at the very least, any program written usin
 ## Building
 `chippy`'s only external dependency is [raylib](https://www.raylib.com/).
 ### Linux
-To build it on Linux, download raylib on your machine, copy the `lib/` directory and `include/` directories into this repo's directory.
+To build it on Linux, download raylib on your machine, then copy the `lib/` and `include/` directories into this repo's directory.
 ### Mac
 To build it on mac, install raylib on your machine with homebrew
-
 Then, simply run
 
 ```bash
