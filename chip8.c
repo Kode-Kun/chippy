@@ -127,6 +127,11 @@ int main(int argc, char **argv)
     if(IsKeyPressed(KEY_O)){
       stack_push(&s, 0xFFFF);
     }
+    if(IsKeyPressed(KEY_R)){
+      init_chip();
+      done_exec = false;
+      s = stack_init();
+    }
 
     // more debugging
     DrawText("Chip8 emulator", 10, 10, 40, RAYWHITE);
