@@ -19,6 +19,7 @@
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "raylib.h"
 #include "chip8.h"
@@ -163,6 +164,7 @@ int load_rom(char *filepath, size_t *filesize)
 
   fseek(src_fd, 0, SEEK_END);
   size_t fsize = ftell(src_fd);
+  assert(fsize > 0);
   *filesize = fsize;
 
   if (fsize > FLASH_MAX_SIZE){
