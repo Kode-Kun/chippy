@@ -22,15 +22,15 @@ VN: One of the 16 available variables. N may be 0 to F (hexadecimal);
 - [x] 5XY0 - `if (Vx == Vy)`
 - [x] 6XNN - `Vx = NN`
 - [x] 7XNN - `Vx += NN`
-- [ ] 8XY0 - `Vx = Vy`
-- [ ] 8XY1 - `Vx |= Vy`
-- [ ] 8XY2 - `Vx &= Vy`
-- [ ] 8XY3 - `Vx ^= Vy`
-- [ ] 8XY4 - `Vx += Vy`
-- [ ] 8XY5 - `Vx -= Vy`
-- [ ] 8XY6 - `Vx >>= 1`
-- [ ] 8XY7 - `Vx = Vy - Vx`
-- [ ] 8XYE - `Vx <<= 1`
+- [x] 8XY0 - `Vx = Vy`
+- [x] 8XY1 - `Vx |= Vy`
+- [x] 8XY2 - `Vx &= Vy`
+- [x] 8XY3 - `Vx ^= Vy`
+- [x] 8XY4 - `Vx += Vy`
+- [x] 8XY5 - `Vx -= Vy`
+- [x] 8XY6 - `Vx >>= 1`
+- [x] 8XY7 - `Vx = Vy - Vx`
+- [x] 8XYE - `Vx <<= 1`
 - [ ] 9XY0 - `if (Vx != Vy)`
 - [ ] ANNN - `I = NNN`
 - [ ] BNNN - `PC = V0 + NNN`

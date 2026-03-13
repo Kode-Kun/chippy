@@ -22,16 +22,21 @@
 #include <assert.h>
 
 #include "raylib.h"
-#include "chip8.h"
 #include "font.h"
 
-//#define OP_ADDRESS(op) (op & 0x0FFF)
-//#define OP_START(op)   (op >> 12)
-//#define OP_END(op)     (op & 0xF)
-//#define OP_8CONST(op)  (op & 0x00FF)
-//#define OP_4CONST(op)  (op & 0x000F)
-//#define OP_X(op)       ((op >> 8) & 0x0F)
-//#define OP_Y(op)       (op & 0x000F)
+#define MEM_SIZE          4096
+#define FLASH_MAX_SIZE    4096
+#define STACK_MAX_SIZE    256
+#define SCREEN_WIDTH      64
+#define SCREEN_HEIGHT     32
+#define __line "--------------------------------"
+
+
+/* datatypes */
+typedef struct{
+  uint16_t stack[STACK_MAX_SIZE];
+  int top;
+} c8_stack_t;
 
 union opcode{
   struct  __attribute__((packed)){
@@ -51,6 +56,22 @@ union opcode{
   } const_f;
   uint16_t   raw;
 };
+
+/* global variables */
+uint8_t  regs[16];
+uint8_t  mem[MEM_SIZE];
+uint8_t  flash[FLASH_MAX_SIZE];
+uint8_t  screen[SCREEN_WIDTH * SCREEN_HEIGHT];
+uint16_t I;
+uint16_t PC;
+
+/* function protypes */
+c8_stack_t stack_init();
+uint16_t stack_push(c8_stack_t *stack, uint16_t val);
+uint16_t stack_pop(c8_stack_t *stack);
+int load_rom(char *filepath, size_t *filesize);
+void init_chip();
+uint16_t fetch();
 
 int main(int argc, char **argv)
 {
@@ -85,7 +106,7 @@ int main(int argc, char **argv)
 
   /*   START OF WINDOWING   */
   InitWindow(SCREEN_WIDTH*10, SCREEN_HEIGHT*10, "chippy");
-  SetTargetFPS(30);
+  SetTargetFPS(60);
 
   init_chip();
   c8_stack_t s = stack_init();
@@ -94,6 +115,7 @@ int main(int argc, char **argv)
   while (!WindowShouldClose())
   {
     BeginDrawing();
+    ClearBackground(BLACK);
 
     /*   EXECUTION   */
     if(!done_exec){
@@ -143,9 +165,19 @@ int main(int argc, char **argv)
 	uint8_t val = op.const_f.const8;
 	regs[reg] += val;
       }
-//else if(op.base_f.start == 0x8) && op.base_f.end == 0x0)){
-//	uint8_t regx = 
-//}
+      else if(op.base_f.start == 0x8){
+	uint8_t regx = op.base_f.x;
+	uint8_t regy = op.base_f.y;
+	if(op.base_f.end == 0x0)      regs[regx] = regs[regy];
+	else if(op.base_f.end == 0x1) regs[regx] |= regs[regy];
+	else if(op.base_f.end == 0x2) regs[regx] &= regs[regy];
+	else if(op.base_f.end == 0x3) regs[regx] ^= regs[regy];
+	else if(op.base_f.end == 0x4) regs[regx] += regs[regy];
+	else if(op.base_f.end == 0x5) regs[regx] -= regs[regy];
+	else if(op.base_f.end == 0x6) regs[regx] = (regs[regx] >> 1);
+	else if(op.base_f.end == 0x7) regs[regx] = (regs[regy] - regs[regx]);
+	else if(op.base_f.end == 0xE) regs[regx] = (regs[regx] << 1);
+      }
     }
 
     // stack debugging
