@@ -25,8 +25,32 @@
 #include "chip8.h"
 #include "font.h"
 
-#define OP_STARTS_WITH(op, x) (op >> 12) == x
-#define OP_ENDS_WITH(op, x) (op & 0xF) == x
+//#define OP_ADDRESS(op) (op & 0x0FFF)
+//#define OP_START(op)   (op >> 12)
+//#define OP_END(op)     (op & 0xF)
+//#define OP_8CONST(op)  (op & 0x00FF)
+//#define OP_4CONST(op)  (op & 0x000F)
+//#define OP_X(op)       ((op >> 8) & 0x0F)
+//#define OP_Y(op)       (op & 0x000F)
+
+union opcode{
+  struct  __attribute__((packed)){
+    uint16_t end: 4;
+    uint16_t y: 4;
+    uint16_t x: 4;
+    uint16_t start: 4;
+  } base_f;
+  struct __attribute__((packed)){
+    uint16_t address: 12;
+    uint16_t start: 4;
+  } ad_f;
+  struct __attribute__((packed)){
+    uint16_t const8: 8;
+    uint16_t x: 4;
+    uint16_t start: 4;
+  } const_f;
+  uint16_t   raw;
+};
 
 int main(int argc, char **argv)
 {
@@ -61,7 +85,7 @@ int main(int argc, char **argv)
 
   /*   START OF WINDOWING   */
   InitWindow(SCREEN_WIDTH*10, SCREEN_HEIGHT*10, "chippy");
-  SetTargetFPS(120);
+  SetTargetFPS(30);
 
   init_chip();
   c8_stack_t s = stack_init();
@@ -73,52 +97,55 @@ int main(int argc, char **argv)
 
     /*   EXECUTION   */
     if(!done_exec){
-      uint16_t opcode = fetch();
+      union opcode op = { .raw = fetch() };
       printf("flash[PC]: %#x\nflash[PC+1]: %#x\nopcode: %#x\nPC: %d\n",
-	     flash[PC-2], flash[PC-1], opcode, PC);
+	     flash[PC-2], flash[PC-1], op.raw, PC);
       if(PC > filesize) done_exec = true;
 
-      if(opcode == 0x00E0){
+      if(op.raw == 0x00E0){
 	ClearBackground(BLACK);
       }
-      else if(opcode == 0x00EE){
+      else if(op.raw == 0x00EE){
 	uint16_t address = stack_pop(&s);
 	PC = address;
       }
-      else if(OP_STARTS_WITH(opcode, 0x1)){
-	uint16_t address = opcode & 0x0FFF;
+      else if(op.base_f.start == 0x1){
+	uint16_t address = op.ad_f.address;
 	PC = address;
       }
-      else if(OP_STARTS_WITH(opcode, 0x2)){
-	uint16_t address = opcode & 0x0FFF;
+      else if(op.base_f.start == 0x2){
+	uint16_t address = op.ad_f.address;
 	stack_push(&s, PC);
 	PC = address;
       }
-      else if(OP_STARTS_WITH(opcode, 0x3)){
-	uint8_t reg = ((opcode >> 8) & ~(0x30));
-	uint8_t val = opcode & 0x00FF;
+      else if(op.base_f.start == 0x3){
+	uint8_t reg = op.base_f.x;
+	uint8_t val = op.const_f.const8;
 	if(regs[reg] == val) PC += 2;
       }
-      else if(OP_STARTS_WITH(opcode, 0x4)){
-	uint8_t reg = ((opcode >> 8) & ~(0x40));
-	uint8_t val = opcode & 0x00FF;
+      else if(op.base_f.start == 0x4){
+	uint8_t reg = op.base_f.x;
+	uint8_t val = op.const_f.const8;
 	if(regs[reg] != val) PC += 2;
       }
-      else if(OP_STARTS_WITH(opcode, 0x5)){
-	uint8_t regx = ((opcode >> 8) & ~(0x50));
-	uint8_t regy = (opcode >> 4) & 0xF;
+      else if(op.base_f.start == 0x5){
+	uint8_t regx = op.base_f.x;
+	uint8_t regy = op.base_f.y;
 	if(regs[regx] == regs[regy]) PC += 2;
       }
-      else if(OP_STARTS_WITH(opcode, 0x6)){
-	uint8_t reg = ((opcode >> 8) & ~(0x60));
-	uint8_t val = opcode & 0x00FF;
+      else if(op.base_f.start == 0x6){
+	uint8_t reg = op.base_f.x;
+	uint8_t val = op.const_f.const8;
 	regs[reg] = val;
       }
-      else if(OP_STARTS_WITH(opcode, 0x7)){
-	uint8_t reg = ((opcode >> 8) & ~(0x70));
-	uint8_t val = opcode & 0x00FF;
+      else if(op.base_f.start == 0x7){
+	uint8_t reg = op.base_f.x;
+	uint8_t val = op.const_f.const8;
 	regs[reg] += val;
       }
+//else if(op.base_f.start == 0x8) && op.base_f.end == 0x0)){
+//	uint8_t regx = 
+//}
     }
 
     // stack debugging
@@ -139,8 +166,8 @@ int main(int argc, char **argv)
     DrawText(TextFormat("Registers: %#X %#X %#X %#X",
 			regs[0], regs[1], regs[2], regs[3]), 10, 60, 20, RAYWHITE);
     DrawText(TextFormat("Stack: %#X %#X %#X %#X",
-			s.stack[0], s.stack[1], s.stack[2], s.stack[3]),
-	     10, 90, 20, RAYWHITE);
+    			 s.stack[0], s.stack[1], s.stack[2], s.stack[3]),
+    	      10, 90, 20, RAYWHITE);
 
     EndDrawing();
   }
@@ -198,13 +225,12 @@ void init_chip()
   PC = 0x0000;
 }
 
-
 uint16_t fetch()
 {
-  uint16_t opcode = ((uint16_t)flash[PC] << 8) | ((uint16_t)flash[PC+1]);
+  uint16_t op = ((uint16_t)flash[PC] << 8) | ((uint16_t)flash[PC+1]);
   PC += 2;
 
-  return opcode;
+  return op;
 }
 
 c8_stack_t stack_init()
