@@ -55,6 +55,7 @@ set_BCD(Vx)
 - [ ] FX65 - `reg_load(Vx, &I)`
 
 ## Peripherals and misc
+- [ ] Refactor opcode handling (change from if/else to switch/case)
 - [ ] Working 64x32 screen with an interface to manipulate the individual pixels / sprites
 - [ ] Delay Timer
 - [ ] Sound Timer

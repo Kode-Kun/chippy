@@ -168,15 +168,35 @@ int main(int argc, char **argv)
       else if(op.base_f.start == 0x8){
 	uint8_t regx = op.base_f.x;
 	uint8_t regy = op.base_f.y;
-	if(op.base_f.end == 0x0)      regs[regx] = regs[regy];
-	else if(op.base_f.end == 0x1) regs[regx] |= regs[regy];
-	else if(op.base_f.end == 0x2) regs[regx] &= regs[regy];
-	else if(op.base_f.end == 0x3) regs[regx] ^= regs[regy];
-	else if(op.base_f.end == 0x4) regs[regx] += regs[regy];
-	else if(op.base_f.end == 0x5) regs[regx] -= regs[regy];
-	else if(op.base_f.end == 0x6) regs[regx] = (regs[regx] >> 1);
-	else if(op.base_f.end == 0x7) regs[regx] = (regs[regy] - regs[regx]);
-	else if(op.base_f.end == 0xE) regs[regx] = (regs[regx] << 1);
+	switch(op.base_f.end){
+	case 0x1:  //0x8XY1
+	  regs[regx] |= regs[regy];
+	  break;
+	case 0x2:  //0x8XY2
+	  regs[regx] &= regs[regy];
+	  break;
+	case 0x3:  //0x8XY3
+	  regs[regx] ^= regs[regy];
+	  break;
+	case 0x4:  //0x8XY4
+	  regs[regx] += regs[regy];
+	  break;
+	case 0x5:  //0x8XY5
+	  regs[regx] -= regs[regy];
+	  break;
+	case 0x6:  //0x8XY6
+	  regs[regx] = (regs[regx] >> 1);
+	  break;
+	case 0x7:  //0x8XY7
+	  regs[regx] = (regs[regy] - regs[regx]);
+	  break;
+	case 0xE:  //0x8XYE
+	  regs[regx] = (regs[regx] << 1);
+	  break;
+	default:
+	  fprintf(stderr, "ERROR: Opcode %#X is not a valid operation.\n", op.raw);
+	  break;
+	}
       }
     }
 
