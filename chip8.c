@@ -39,7 +39,7 @@ typedef struct{
 } c8_stack_t;
 
 union opcode{
-  struct  __attribute__((packed)){
+  struct __attribute__((packed)){
     uint16_t end: 4;
     uint16_t y: 4;
     uint16_t x: 4;
@@ -124,48 +124,59 @@ int main(int argc, char **argv)
 	     flash[PC-2], flash[PC-1], op.raw, PC);
       if(PC > filesize) done_exec = true;
 
-      if(op.raw == 0x00E0){
-	ClearBackground(BLACK);
+      switch(op.base_f.start){
+      case 0x0: {
+	if(op.raw == 0x00E0){
+	  ClearBackground(BLACK);
+	}
+	else if(op.raw == 0x00EE){
+	  uint16_t address = stack_pop(&s);
+	  PC = address;
+	}
+	break;
       }
-      else if(op.raw == 0x00EE){
-	uint16_t address = stack_pop(&s);
-	PC = address;
-      }
-      else if(op.base_f.start == 0x1){
+      case 0x1: {
 	uint16_t address = op.ad_f.address;
 	PC = address;
+	break;
       }
-      else if(op.base_f.start == 0x2){
+      case 0x2: {
 	uint16_t address = op.ad_f.address;
 	stack_push(&s, PC);
 	PC = address;
+	break;
       }
-      else if(op.base_f.start == 0x3){
+      case 0x3: {
 	uint8_t reg = op.base_f.x;
 	uint8_t val = op.const_f.const8;
 	if(regs[reg] == val) PC += 2;
+	break;
       }
-      else if(op.base_f.start == 0x4){
+      case 0x4: {
 	uint8_t reg = op.base_f.x;
 	uint8_t val = op.const_f.const8;
 	if(regs[reg] != val) PC += 2;
+	break;
       }
-      else if(op.base_f.start == 0x5){
+      case 0x5: {
 	uint8_t regx = op.base_f.x;
 	uint8_t regy = op.base_f.y;
 	if(regs[regx] == regs[regy]) PC += 2;
+	break;
       }
-      else if(op.base_f.start == 0x6){
+      case 0x6: {
 	uint8_t reg = op.base_f.x;
 	uint8_t val = op.const_f.const8;
 	regs[reg] = val;
+	break;
       }
-      else if(op.base_f.start == 0x7){
+      case 0x7: {
 	uint8_t reg = op.base_f.x;
 	uint8_t val = op.const_f.const8;
 	regs[reg] += val;
+	break;
       }
-      else if(op.base_f.start == 0x8){
+      case 0x8: {
 	uint8_t regx = op.base_f.x;
 	uint8_t regy = op.base_f.y;
 	switch(op.base_f.end){
@@ -197,7 +208,7 @@ int main(int argc, char **argv)
 	  fprintf(stderr, "ERROR: Opcode %#X is not a valid operation.\n", op.raw);
 	  break;
 	}
-      }
+      } }
     }
 
     // stack debugging
