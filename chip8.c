@@ -180,6 +180,9 @@ int main(int argc, char **argv)
 	uint8_t regx = op.base_f.x;
 	uint8_t regy = op.base_f.y;
 	switch(op.base_f.end){
+	case 0x0:
+	  regs[regx] = regs[regy];
+	  break;
 	case 0x1:  //0x8XY1
 	  regs[regx] |= regs[regy];
 	  break;
@@ -208,6 +211,7 @@ int main(int argc, char **argv)
 	  fprintf(stderr, "ERROR: Opcode %#X is not a valid operation.\n", op.raw);
 	  break;
 	}
+	break;
       } }
     }
 
