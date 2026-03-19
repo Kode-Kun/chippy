@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#define ARRAY_SIZE(arr) (int)(sizeof(arr) / sizeof((arr)[0]))
 
 //utility function to always write in big-endian
 uint8_t write_be16(FILE *f, uint16_t v)
@@ -52,6 +52,7 @@ int main()
     }
   }
 
+  printf("Info: Succesfully wrote %d bytes to %s.\n", (ARRAY_SIZE(rom) * 2), filename);
   fclose(romf);
   return 0;
 }

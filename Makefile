@@ -2,6 +2,7 @@ SRC=chip8.c
 EXEC=chippy
 INCLUDE=./include
 CFLAGS=-Wall -Wextra
+WRITESCRIPT=write
 
 UNAME_S := $(shell uname -s)
 WD := $(shell pwd)
@@ -19,17 +20,19 @@ ifeq ($(UNAME_S),Darwin)
 	LDFLAGS=-L$(RAYLIB_PATH) -Wl, -lraylib $(FRAMEWORKS)
 endif
 
+$(WRITESCRIPT): $(WRITESCRIPT).c
+	$(CC) $(WRITESCRIPT).c -o $(WRITESCRIPT) $(CFLAGS) -DNDEBUG
 
 all: $(EXEC)
 
 $(EXEC): $(SRC)
-	$(CC) $(SRC) -o $(EXEC) $(CFLAGS) -I$(INCLUDE) $(LDFLAGS) -DNDEBUG
+	$(CC) $(SRC) -o $(EXEC) $(CFLAGS) -I$(INCLUDE) $(LDFLAGS)
 
 debug: $(SRC)
 	$(CC) $(SRC) -o $(EXEC) $(CFLAGS) -I$(INCLUDE) $(LDFLAGS) -g
 
 clean:
-	rm -f $(EXEC)
+	rm -f $(EXEC) $(WRITESCRIPT)
 
 
 .PHONY: all debug clean
