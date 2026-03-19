@@ -31,10 +31,10 @@ VN: One of the 16 available variables. N may be 0 to F (hexadecimal);
 - [x] 8XY6 - `Vx >>= 1`
 - [x] 8XY7 - `Vx = Vy - Vx`
 - [x] 8XYE - `Vx <<= 1`
-- [ ] 9XY0 - `if (Vx != Vy)`
-- [ ] ANNN - `I = NNN`
-- [ ] BNNN - `PC = V0 + NNN`
-- [ ] CXNN - `Vx = rand() & NN`
+- [x] 9XY0 - `if (Vx != Vy)`
+- [x] ANNN - `I = NNN`
+- [x] BNNN - `PC = V0 + NNN`
+- [x] CXNN - `Vx = rand() & NN`
 - [ ] DXYN - `draw(Vx, Vy, N)`
 - [ ] EX9E - `if (key() == Vx)`
 - [ ] EXA1 - `if (key() != Vx)`
@@ -55,14 +55,15 @@ set_BCD(Vx)
 - [ ] FX65 - `reg_load(Vx, &I)`
 
 ## Peripherals and misc
-- [ ] Refactor opcode handling (change from if/else to switch/case)
 - [ ] Working 64x32 screen with an interface to manipulate the individual pixels / sprites
 - [ ] Delay Timer
 - [ ] Sound Timer
 - [ ] Input through Hex keyboard
+- [ ] Check for invalid operations (example: 0x5XY1 instead of 0x5XY0)
 - [x] Stack
 - [x] Flash / ROM loading
 - [x] Memory / RAM
+- [x] Refactor opcode handling (change from if/else to switch/case)
 
 ## References
 - https://chip8.gulrak.net/

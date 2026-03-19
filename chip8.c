@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 #include <ctype.h>
 #include <assert.h>
 
@@ -67,8 +68,8 @@ uint16_t PC;
 
 /* function protypes */
 c8_stack_t stack_init();
-uint16_t stack_push(c8_stack_t *stack, uint16_t val);
-uint16_t stack_pop(c8_stack_t *stack);
+uint16_t stack_push(c8_stack_t *s, uint16_t val);
+uint16_t stack_pop(c8_stack_t *s);
 int load_rom(char *filepath, size_t *filesize);
 void init_chip();
 uint16_t fetch();
@@ -106,7 +107,7 @@ int main(int argc, char **argv)
 
   /*   START OF WINDOWING   */
   InitWindow(SCREEN_WIDTH*10, SCREEN_HEIGHT*10, "chippy");
-  SetTargetFPS(60);
+  SetTargetFPS(120);
 
   init_chip();
   c8_stack_t s = stack_init();
@@ -125,95 +126,87 @@ int main(int argc, char **argv)
       if(PC > filesize) done_exec = true;
 
       switch(op.base_f.start){
-      case 0x0: {
+      case 0x0:
 	if(op.raw == 0x00E0){
 	  ClearBackground(BLACK);
 	}
 	else if(op.raw == 0x00EE){
-	  uint16_t address = stack_pop(&s);
-	  PC = address;
+	  PC = stack_pop(&s); //return address
 	}
 	break;
-      }
-      case 0x1: {
-	uint16_t address = op.ad_f.address;
-	PC = address;
+      case 0x1:
+	PC = op.ad_f.address;
 	break;
-      }
-      case 0x2: {
-	uint16_t address = op.ad_f.address;
+      case 0x2:
 	stack_push(&s, PC);
-	PC = address;
+	PC = op.ad_f.address;
 	break;
-      }
-      case 0x3: {
-	uint8_t regx = op.base_f.x;
-	uint8_t val = op.const_f.const8;
-	if(regs[regx] == val) PC += 2;
+      case 0x3:
+	if(regs[op.base_f.x] == op.const_f.const8) PC += 2;
 	break;
-      }
-      case 0x4: {
-	uint8_t regx = op.base_f.x;
-	uint8_t val = op.const_f.const8;
-	if(regs[regx] != val) PC += 2;
+      case 0x4:
+	if(regs[op.base_f.x] != op.const_f.const8) PC += 2;
 	break;
-      }
-      case 0x5: {
-	uint8_t regx = op.base_f.x;
-	uint8_t regy = op.base_f.y;
-	if(regs[regx] == regs[regy]) PC += 2;
+      case 0x5:
+	if(regs[op.base_f.x] == regs[op.base_f.y]) PC += 2;
 	break;
-      }
-      case 0x6: {
-	uint8_t regx = op.base_f.x;
-	uint8_t val = op.const_f.const8;
-	regs[regx] = val;
+      case 0x6:
+	regs[op.base_f.x] = op.const_f.const8;
 	break;
-      }
-      case 0x7: {
-	uint8_t regx = op.base_f.x;
-	uint8_t val = op.const_f.const8;
-	regs[regx] += val;
+      case 0x7:
+	regs[op.base_f.x] += op.const_f.const8;
 	break;
-      }
-      case 0x8: {
-	uint8_t regx = op.base_f.x;
-	uint8_t regy = op.base_f.y;
+      case 0x8:
 	switch(op.base_f.end){
 	case 0x0:  //0x8XY0
-	  regs[regx] = regs[regy];
+	  regs[op.base_f.x] = regs[op.base_f.y];
 	  break;
 	case 0x1:  //0x8XY1
-	  regs[regx] |= regs[regy];
+	  regs[op.base_f.x] |= regs[op.base_f.y];
 	  break;
 	case 0x2:  //0x8XY2
-	  regs[regx] &= regs[regy];
+	  regs[op.base_f.x] &= regs[op.base_f.y];
 	  break;
 	case 0x3:  //0x8XY3
-	  regs[regx] ^= regs[regy];
+	  regs[op.base_f.x] ^= regs[op.base_f.y];
 	  break;
 	case 0x4:  //0x8XY4
-	  regs[regx] += regs[regy];
+	  regs[op.base_f.x] += regs[op.base_f.y];
 	  break;
 	case 0x5:  //0x8XY5
-	  regs[regx] -= regs[regy];
+	  regs[op.base_f.x] -= regs[op.base_f.y];
 	  break;
 	case 0x6:  //0x8XY6
-	  regs[regx] = (regs[regx] >> 1);
+	  regs[op.base_f.x] = (regs[op.base_f.x] >> 1);
 	  break;
 	case 0x7:  //0x8XY7
-	  regs[regx] = (regs[regy] - regs[regx]);
+	  regs[op.base_f.x] = (regs[op.base_f.y] - regs[op.base_f.x]);
 	  break;
 	case 0xE:  //0x8XYE
-	  regs[regx] = (regs[regx] << 1);
+	  regs[op.base_f.x] = (regs[op.base_f.x] << 1);
 	  break;
 	default:
 	  fprintf(stderr, "ERROR: Opcode %#X is not a valid operation.\n", op.raw);
 	  break;
 	}
 	break;
-      } }
-    }
+      case 0x9:
+	if(regs[op.base_f.x] != regs[op.base_f.y]) PC += 2;
+	break;
+      case 0xA:
+	I = op.ad_f.address;
+	break;
+      case 0xB:
+	PC = regs[0] + op.ad_f.address;
+	break;
+      case 0xC: {
+	srand((unsigned) time(NULL));
+	uint8_t randint = (uint8_t)rand();
+	regs[op.base_f.x] = randint & op.const_f.const8;
+	fprintf(stderr, "Constant:\t%#X\n", randint);
+	break;
+      }
+      }}
 
     // stack debugging
     if(IsKeyPressed(KEY_P)){
