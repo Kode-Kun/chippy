@@ -147,15 +147,15 @@ int main(int argc, char **argv)
 	break;
       }
       case 0x3: {
-	uint8_t reg = op.base_f.x;
+	uint8_t regx = op.base_f.x;
 	uint8_t val = op.const_f.const8;
-	if(regs[reg] == val) PC += 2;
+	if(regs[regx] == val) PC += 2;
 	break;
       }
       case 0x4: {
-	uint8_t reg = op.base_f.x;
+	uint8_t regx = op.base_f.x;
 	uint8_t val = op.const_f.const8;
-	if(regs[reg] != val) PC += 2;
+	if(regs[regx] != val) PC += 2;
 	break;
       }
       case 0x5: {
@@ -165,22 +165,22 @@ int main(int argc, char **argv)
 	break;
       }
       case 0x6: {
-	uint8_t reg = op.base_f.x;
+	uint8_t regx = op.base_f.x;
 	uint8_t val = op.const_f.const8;
-	regs[reg] = val;
+	regs[regx] = val;
 	break;
       }
       case 0x7: {
-	uint8_t reg = op.base_f.x;
+	uint8_t regx = op.base_f.x;
 	uint8_t val = op.const_f.const8;
-	regs[reg] += val;
+	regs[regx] += val;
 	break;
       }
       case 0x8: {
 	uint8_t regx = op.base_f.x;
 	uint8_t regy = op.base_f.y;
 	switch(op.base_f.end){
-	case 0x0:
+	case 0x0:  //0x8XY0
 	  regs[regx] = regs[regy];
 	  break;
 	case 0x1:  //0x8XY1
