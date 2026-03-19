@@ -26,7 +26,6 @@
 #include "font.h"
 
 #define MEM_SIZE          4096
-#define FLASH_MAX_SIZE    4096
 #define STACK_MAX_SIZE    256
 #define SCREEN_WIDTH      64
 #define SCREEN_HEIGHT     32
@@ -61,7 +60,6 @@ union opcode{
 /* global variables */
 uint8_t  regs[16];
 uint8_t  mem[MEM_SIZE];
-uint8_t  flash[FLASH_MAX_SIZE];
 uint8_t  screen[SCREEN_WIDTH * SCREEN_HEIGHT];
 uint16_t I;
 uint16_t PC;
@@ -121,9 +119,9 @@ int main(int argc, char **argv)
     /*   EXECUTION   */
     if(!done_exec){
       union opcode op = { .raw = fetch() };
-      printf("flash[PC]: %#x\nflash[PC+1]: %#x\nopcode: %#x\nPC: %d\n",
-	     flash[PC-2], flash[PC-1], op.raw, PC);
-      if(PC > filesize) done_exec = true;
+      printf("mem[PC]: %#x\nmem[PC+1]: %#x\nopcode: %#x\nPC: %d\n",
+	     mem[PC-2], mem[PC-1], op.raw, PC);
+      if(PC > (filesize + 0x200)) done_exec = true;
 
       switch(op.base_f.start){
       case 0x0:
@@ -203,7 +201,7 @@ int main(int argc, char **argv)
 	srand((unsigned) time(NULL));
 	uint8_t randint = (uint8_t)rand();
 	regs[op.base_f.x] = randint & op.const_f.const8;
-	fprintf(stderr, "Constant:\t%#X\n", randint);
+	fprintf(stderr, "Random number:\t%#X\n", randint);
 	break;
       }
       }}
@@ -239,7 +237,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-// loads ROM file into flash memory (uint8_t flash[FLASH_MAX_SIZE])
+// loads ROM file into memory (uint8_t mem[MEM_SIZE])
 int load_rom(char *filepath, size_t *filesize)
 {
   FILE *src_fd;
@@ -254,21 +252,21 @@ int load_rom(char *filepath, size_t *filesize)
   assert(fsize > 0);
   *filesize = fsize;
 
-  if (fsize > FLASH_MAX_SIZE){
+  if (fsize > MEM_SIZE){
     fprintf(stderr, "ERROR: File \"%s\" too big to fit in memory (%d).\n",
-	   filepath, FLASH_MAX_SIZE);
+	   filepath, MEM_SIZE);
     exit(1);
   }
 
   fseek(src_fd, 0, SEEK_SET);
-  fread(&flash, 1, fsize, src_fd);
+  fread(&mem[0x200], 1, fsize, src_fd); //account for offset
 
   printf("Loaded %s (%zu bytes) successfully :3\n", filepath, fsize);
   // code for printing out the memory in hex, might come in handy for debugging later on
   /* printf("%s\n", __line); */
   /* printf("MEMORY:\n"); */
   /* for (int i = 0; i < fsize; i++){ */
-  /*   printf("%#X ", flash[i]); */
+  /*   printf("%#X ", mem[i]); */
   /* } */
   /* printf("\n%s\n", __line); */
 
@@ -282,12 +280,12 @@ void init_chip()
     regs[i] = 0x0000;
   }
   I = 0x0000;
-  PC = 0x0000;
+  PC = 0x0200;
 }
 
 uint16_t fetch()
 {
-  uint16_t op = ((uint16_t)flash[PC] << 8) | ((uint16_t)flash[PC+1]);
+  uint16_t op = ((uint16_t)mem[PC] << 8) | ((uint16_t)mem[PC+1]);
   PC += 2;
 
   return op;
