@@ -15,7 +15,7 @@ EXECA_OBJ = $(BUILD_DIR)/asm.o
 
 INCLUDE=./include
 CFLAGS=-Wall -Wextra
-WRITESCRIPT=write
+WRITE=write
 
 UNAME_S := $(shell uname -s)
 WD := $(shell pwd)
@@ -39,6 +39,9 @@ $(EXECC): $(EXECC_OBJ) $(LIB_OBJS)
 $(EXECA): $(EXECA_OBJ) $(LIB_OBJS)
 	$(CC) $(CFLAGS) -I$(INCLUDE) $^ -o $@ -g
 
+$(WRITE): $(WRITE).c
+	$(CC) $(CFLAGS) $^ -o $@
+
 $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -I$(INCLUDE) -c $< -o $@
 
@@ -46,7 +49,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 clean:
-	rm -f $(EXECC) $(WRITESCRIPT)
+	rm -f $(EXECC) $(WRITE)
 	rm -rf $(BUILD_DIR)
 
 
