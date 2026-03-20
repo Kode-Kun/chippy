@@ -1,6 +1,8 @@
 *~
 *.dSYM
 raylib.h
+raymath.h
+rlgl.h
 main
 chippy
 test
