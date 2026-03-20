@@ -1,5 +1,18 @@
-SRC=chip8.c
-EXEC=chippy
+BUILD_DIR = build
+
+LIB_SRCS = common.c
+LIB_OBJS = $(patsubst %.c, $(BUILD_DIR)/%.o, $(LIB_SRCS))
+
+# Emulator
+EXECC = chippy
+EXECC_SRC = chip8.c
+EXECC_OBJ = $(BUILD_DIR)/chip8.o
+
+# Assembler
+EXECA = chasm
+EXECA_SRC = asm.c
+EXECA_OBJ = $(BUILD_DIR)/asm.o
+
 INCLUDE=./include
 CFLAGS=-Wall -Wextra
 WRITESCRIPT=write
@@ -20,19 +33,21 @@ ifeq ($(UNAME_S),Darwin)
 	LDFLAGS=-L$(RAYLIB_PATH) -Wl, -lraylib $(FRAMEWORKS)
 endif
 
-$(WRITESCRIPT): $(WRITESCRIPT).c
-	$(CC) $(WRITESCRIPT).c -o $(WRITESCRIPT) $(CFLAGS) -DNDEBUG
+$(EXECC): $(EXECC_OBJ) $(LIB_OBJS)
+	$(CC) $(CFLAGS) -I$(INCLUDE) $(LDFLAGS) $^ -o $@ -g
 
-all: $(EXEC)
+$(EXECA): $(EXECA_OBJ) $(LIB_OBJS)
+	$(CC) $(CFLAGS) -I$(INCLUDE) $^ -o $@ -g
 
-$(EXEC): $(SRC)
-	$(CC) $(SRC) -o $(EXEC) $(CFLAGS) -I$(INCLUDE) $(LDFLAGS)
+$(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -I$(INCLUDE) -c $< -o $@
 
-debug: $(SRC)
-	$(CC) $(SRC) -o $(EXEC) $(CFLAGS) -I$(INCLUDE) $(LDFLAGS) -g
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 clean:
-	rm -f $(EXEC) $(WRITESCRIPT)
+	rm -f $(EXECC) $(WRITESCRIPT)
+	rm -rf $(BUILD_DIR)
 
 
 .PHONY: all debug clean

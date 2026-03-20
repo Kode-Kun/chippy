@@ -6,5 +6,7 @@ chippy
 test
 write
 rom.c8
-include/
+rom.8o
+rom.ch8
+build/
 lib/

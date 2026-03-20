@@ -24,53 +24,23 @@
 
 #include "raylib.h"
 #include "font.h"
+#include "common.h"
 
-#define MEM_SIZE          4096
 #define STACK_MAX_SIZE    256
 #define SCREEN_WIDTH      64
 #define SCREEN_HEIGHT     32
 #define __line "--------------------------------"
 
-
-/* datatypes */
 typedef struct{
   uint16_t stack[STACK_MAX_SIZE];
   int top;
 } c8_stack_t;
 
-union opcode{
-  struct __attribute__((packed)){
-    uint16_t end: 4;
-    uint16_t y: 4;
-    uint16_t x: 4;
-    uint16_t start: 4;
-  } base_f;
-  struct __attribute__((packed)){
-    uint16_t address: 12;
-    uint16_t start: 4;
-  } ad_f;
-  struct __attribute__((packed)){
-    uint16_t const8: 8;
-    uint16_t x: 4;
-    uint16_t start: 4;
-  } const_f;
-  uint16_t   raw;
-};
-
-/* global variables */
-uint8_t  regs[16];
-uint8_t  mem[MEM_SIZE];
-uint8_t  screen[SCREEN_WIDTH * SCREEN_HEIGHT];
-uint16_t I;
-uint16_t PC;
-
 /* function protypes */
 c8_stack_t stack_init();
 uint16_t stack_push(c8_stack_t *s, uint16_t val);
 uint16_t stack_pop(c8_stack_t *s);
-int load_rom(char *filepath, size_t *filesize);
-void init_chip();
-uint16_t fetch();
+void init_chip(uint8_t *regs, uint16_t *I, uint16_t *PC);
 
 int main(int argc, char **argv)
 {
@@ -89,15 +59,25 @@ int main(int argc, char **argv)
       else if(isprint(optopt)) fprintf(stderr, "Option -%c is not supported.\n", optopt);
       break;
     default:
+      fprintf(stderr, "Usage: chippy -f <rom.ch8>\n");
       abort();
     }
   }
   argc -= optind;
   argv += optind;
 
+  /*   initializing the emulator   */
+  uint8_t  regs[16];
+  uint8_t  mem[MEM_SIZE];
+  //uint8_t  screen[SCREEN_WIDTH * SCREEN_HEIGHT];
+  uint16_t I;
+  uint16_t PC;
+  c8_stack_t s = stack_init();
+  init_chip(&regs[0], &I, &PC);
+
   /*   getting ROM file from args   */
   size_t filesize = 0;
-  if(filepath) load_rom(filepath, &filesize);
+  if(filepath) load_rom(filepath, &filesize, &mem[0]);
   else{
     fprintf(stderr, "ERROR: you forgot to provide a source file\n");
     exit(1);
@@ -107,8 +87,8 @@ int main(int argc, char **argv)
   InitWindow(SCREEN_WIDTH*10, SCREEN_HEIGHT*10, "chippy");
   SetTargetFPS(120);
 
-  init_chip();
-  c8_stack_t s = stack_init();
+
+
   bool done_exec = false; //temporary; for debugging only
 
   while (!WindowShouldClose())
@@ -118,7 +98,7 @@ int main(int argc, char **argv)
 
     /*   EXECUTION   */
     if(!done_exec){
-      union opcode op = { .raw = fetch() };
+      union opcode op = { .raw = fetch(&mem[0], &PC) };
       printf("mem[PC]: %#x\nmem[PC+1]: %#x\nopcode: %#x\nPC: %d\n",
 	     mem[PC-2], mem[PC-1], op.raw, PC);
       if(PC > (filesize + 0x200)) done_exec = true;
@@ -214,7 +194,7 @@ int main(int argc, char **argv)
       stack_push(&s, 0xFFFF);
     }
     if(IsKeyPressed(KEY_R)){
-      init_chip();
+      init_chip(&regs[0], &I, &PC);
       done_exec = false;
       s = stack_init();
     }
@@ -237,58 +217,14 @@ int main(int argc, char **argv)
   return 0;
 }
 
-// loads ROM file into memory (uint8_t mem[MEM_SIZE])
-int load_rom(char *filepath, size_t *filesize)
-{
-  FILE *src_fd;
-
-  if ((src_fd = fopen(filepath, "r")) == NULL){
-    perror(filepath);
-    exit(1);
-  }
-
-  fseek(src_fd, 0, SEEK_END);
-  size_t fsize = ftell(src_fd);
-  assert(fsize > 0);
-  *filesize = fsize;
-
-  if (fsize > MEM_SIZE){
-    fprintf(stderr, "ERROR: File \"%s\" too big to fit in memory (%d).\n",
-	   filepath, MEM_SIZE);
-    exit(1);
-  }
-
-  fseek(src_fd, 0, SEEK_SET);
-  fread(&mem[0x200], 1, fsize, src_fd); //account for offset
-
-  printf("Loaded %s (%zu bytes) successfully :3\n", filepath, fsize);
-  // code for printing out the memory in hex, might come in handy for debugging later on
-  /* printf("%s\n", __line); */
-  /* printf("MEMORY:\n"); */
-  /* for (int i = 0; i < fsize; i++){ */
-  /*   printf("%#X ", mem[i]); */
-  /* } */
-  /* printf("\n%s\n", __line); */
-
-  return 0;
-}
-
 // initialize registers and clocks
-void init_chip()
+void init_chip(uint8_t *regs, uint16_t *I, uint16_t *PC)
 {
   for(int i = 0; i < 16; i++){
     regs[i] = 0x0000;
   }
-  I = 0x0000;
-  PC = 0x0200;
-}
-
-uint16_t fetch()
-{
-  uint16_t op = ((uint16_t)mem[PC] << 8) | ((uint16_t)mem[PC+1]);
-  PC += 2;
-
-  return op;
+  *I = 0x0000;
+  *PC = 0x0200;
 }
 
 c8_stack_t stack_init()

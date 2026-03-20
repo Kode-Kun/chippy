@@ -15,7 +15,7 @@
 /* This little script simply writes raw binary data to a test ROM so we
    can run tests in development to see if each opcode is implemented
    correctly.
-   The `rom.c8` file gets overwritten each time this script is called. */
+   The `rom.ch8` file gets overwritten each time this script is called. */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -35,7 +35,7 @@ uint8_t write_be16(FILE *f, uint16_t v)
 
 int main()
 {
-  char *filename = "rom.8o";
+  char *filename = "rom.ch8";
   FILE *romf     = fopen(filename, "w");
   uint16_t rom[] =  { 0x2216, 0x3168, 0x6030, 0x7001, 0x00E0,
 		      0x3069, 0x1206, 0x8300, 0x833E, 0xC169,
