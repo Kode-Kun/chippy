@@ -28,5 +28,6 @@ union opcode{
 
 int load_rom(char *filepath, size_t *filesize, uint8_t *mem);
 uint16_t fetch(uint8_t *mem, uint16_t *PC);
+uint8_t write_be16(FILE *f, uint16_t v);
 
 #endif

@@ -21,17 +21,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define ARRAY_SIZE(arr) (int)(sizeof(arr) / sizeof((arr)[0]))
+#include "common.h"
 
-//utility function to always write in big-endian
-uint8_t write_be16(FILE *f, uint16_t v)
-{
-  uint8_t be[2];
-  be[0] = (v >> 8) & 0xFF;
-  be[1] = v & 0xFF;
-  if(fwrite(be, 1, 2, f) != 2) return 1;
-  return 0;
-}
+#define ARRAY_SIZE(arr) (int)(sizeof(arr) / sizeof((arr)[0]))
 
 int main()
 {

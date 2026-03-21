@@ -39,8 +39,8 @@ $(EXECC): $(EXECC_OBJ) $(LIB_OBJS)
 $(EXECA): $(EXECA_OBJ) $(LIB_OBJS)
 	$(CC) $(CFLAGS) -I$(INCLUDE) $^ -o $@ -g
 
-$(WRITE): $(WRITE).c
-	$(CC) $(CFLAGS) $^ -o $@
+$(WRITE): $(WRITE).c $(LIB_OBJS)
+	$(CC) $(CFLAGS) -I$(INCLUDE) $^ -o $@
 
 $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -I$(INCLUDE) -c $< -o $@

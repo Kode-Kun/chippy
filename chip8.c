@@ -12,6 +12,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* Chippy is a simple chip-8 emulator written completely in C with raylib.
+ * It implements standard CHIP-8, not SCHIP or anything of the sort.
+ * Chippy comes with a small assembler, inspired by Christian Egeberg's [Chipper](https://www.hpcalc.org/details/6735).
+ */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

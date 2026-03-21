@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+
 #include "common.h"
 
 // loads ROM file into memory (uint8_t mem[MEM_SIZE])
@@ -37,4 +38,14 @@ uint16_t fetch(uint8_t *mem, uint16_t *PC)
   *PC += 2;
 
   return op;
+}
+
+//utility function to always write in big-endian
+uint8_t write_be16(FILE *f, uint16_t v)
+{
+  uint8_t be[2];
+  be[0] = (v >> 8) & 0xFF;
+  be[1] = v & 0xFF;
+  if(fwrite(be, 1, 2, f) != 2) return 1;
+  return 0;
 }
