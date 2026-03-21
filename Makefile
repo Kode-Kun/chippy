@@ -34,7 +34,7 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 $(EXECC): $(EXECC_OBJ) $(LIB_OBJS)
-	$(CC) $(CFLAGS) -I$(INCLUDE) $(LDFLAGS) $^ -o $@ -g
+	$(CC) $(CFLAGS) -I$(INCLUDE) $^ -o $@ -g $(LDFLAGS)
 
 $(EXECA): $(EXECA_OBJ) $(LIB_OBJS)
 	$(CC) $(CFLAGS) -I$(INCLUDE) $^ -o $@ -g
