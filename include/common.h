@@ -47,6 +47,11 @@ typedef struct {
   char *data;
 } token_t;
 
+typedef struct {
+  int count;
+  token_t tokens[5];
+} instruction_t;
+
 union opcode {
   struct __attribute__((packed)){
     uint16_t end: 4;
