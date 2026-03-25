@@ -10,12 +10,21 @@ It aims to be fully compatible with, at the very least, any program written usin
 ### Linux
 To build it on Linux, download raylib on your machine, then copy the `lib/` and `include/` directories into this repo's directory.
 ### Mac
-To build it on mac, install raylib on your machine with homebrew
+To build it on mac, install raylib on your machine with homebrew and change the `RAYLIB_PATH` in the Makefile to the path of your raylib installation.
 
 Then, simply run
 
 ```bash
-make
+make chippy
 ```
+for the chippy emulator,
+```bash
+make chasm
+```
+for the chasm assembler and
+```bash
+make write
+```
+for the write utility.
 
 `chippy` is licensed under the GPL-3.0 (see LICENSE.md).
