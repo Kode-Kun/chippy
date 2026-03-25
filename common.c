@@ -49,3 +49,119 @@ uint8_t write_be16(FILE *f, uint16_t v)
   if(fwrite(be, 1, 2, f) != 2) return 1;
   return 0;
 }
+
+char *token_to_str(TokenType t)
+{
+  char *type;
+  switch(t){
+  case TokenMov:
+    type = "TokenMov";
+    break;
+  case TokenClear:
+    type = "TokenClear";
+    break;
+  case TokenRet:
+    type = "TokenRet";
+    break;
+  case TokenB:
+    type = "TokenB";
+    break;
+  case TokenCall:
+    type = "TokenCall";
+    break;
+  case TokenIfe:
+    type = "TokenIfe";
+    break;
+  case TokenAdd:
+    type = "TokenAdd";
+    break;
+  case TokenOr:
+    type = "TokenOr";
+    break;
+  case TokenAnd:
+    type = "TokenAnd";
+    break;
+  case TokenXor:
+    type = "TokenXor";
+    break;
+  case TokenSub:
+    type = "TokenSub";
+    break;
+  case TokenLls:
+    type = "TokenLls";
+    break;
+  case TokenSus:
+    type = "TokenSus";
+    break;
+  case TokenLrs:
+    type = "TokenLrs";
+    break;
+  case TokenIfne:
+    type = "TokenIfne";
+    break;
+  case TokenBa:
+    type = "TokenBa";
+    break;
+  case TokenRand:
+    type = "TokenRand";
+    break;
+  case TokenDrw:
+    type = "TokenDrw";
+    break;
+  case TokenIke:
+    type = "TokenIke";
+    break;
+  case TokenIkn:
+    type = "TokenIkn";
+    break;
+  case TokenGdl:
+    type = "TokenGdl";
+    break;
+  case TokenGtk:
+    type = "TokenGtk";
+    break;
+  case TokenSdl:
+    type = "TokenSdl";
+    break;
+  case TokenSsd:
+    type = "TokenSsd";
+    break;
+  case TokenSpr:
+    type = "TokenSpr";
+    break;
+  case TokenBcd:
+    type = "TokenBcd";
+    break;
+  case TokenDpr:
+    type = "TokenDpr";
+    break;
+  case TokenLdr:
+    type = "TokenLdr";
+    break;
+  case TokenReg:
+    type = "TokenReg";
+    break;
+  case TokenConst:
+    type = "TokenConst";
+    break;
+  case TokenAddr:
+    type = "TokenAddr";
+    break;
+  case TokenComment:
+    type = "TokenComment";
+    break;
+  case TokenLabel:
+    type = "TokenLabel";
+    break;
+  case TokenNull:
+    type = "TokenNull";
+    break;
+  case TokenCount:
+    type = "TokenCount";
+    break;
+  default:
+    type = "Unknown!";
+    break;
+  }
+  return type;
+}

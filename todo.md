@@ -17,11 +17,11 @@ VN: One of the 16 available variables. N may be 0 to F (hexadecimal);
 - [x] 00EE (RETURN) - `return;`
 - [x] 1NNN (B NNN)- `goto NNN;`
 - [x] 2NNN (CALL NNN)- `*(0xNNN)()`
-- [x] 3XNN (IFE VX, NN)- `if (Vx == NN)`
-- [x] 4XNN (IFNE VX, NN)- `if (Vx != NN)`
+- [x] 3XNN (IFE VX, #NN)- `if (Vx == NN)`
+- [x] 4XNN (IFNE VX, #NN)- `if (Vx != NN)`
 - [x] 5XY0 (IFE VX, VY)- `if (Vx == Vy)`
-- [x] 6XNN (MOV VX, NN)- `Vx = NN`
-- [x] 7XNN (ADD VX, NN)- `Vx += NN`
+- [x] 6XNN (MOV VX, #NN)- `Vx = NN`
+- [x] 7XNN (ADD VX, #NN)- `Vx += NN`
 - [x] 8XY0 (MOV VX, VY)- `Vx = Vy`
 - [x] 8XY1 (OR VX, VY)- `Vx |= Vy`
 - [x] 8XY2 (AND VX, VY)- `Vx &= Vy`
@@ -34,8 +34,8 @@ VN: One of the 16 available variables. N may be 0 to F (hexadecimal);
 - [x] 9XY0 (IFNE VX, VY)- `if (Vx != Vy)`
 - [x] ANNN (MOV I, NNN)- `I = NNN`
 - [x] BNNN (BA NNN)- `PC = V0 + NNN`
-- [x] CXNN (RAND VX, NN)- `Vx = rand() & NN`
-- [ ] DXYN (DRW VX, VY, N)- `draw(Vx, Vy, N)`
+- [x] CXNN (RAND VX, #NN)- `Vx = rand() & NN`
+- [ ] DXYN (DRW VX, VY, #N)- `draw(Vx, Vy, N)`
 - [ ] EX9E (IKE VX)- `if (key() == Vx)`
 - [ ] EXA1 (IKN VX)- `if (key() != Vx)`
 - [ ] FX07 (GDL VX)- `Vx = get_delay()`
