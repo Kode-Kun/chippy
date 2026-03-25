@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define MEM_SIZE          4096
+#define MEM_SIZE          3584
 
 typedef enum {
-  TokenMov,      // 8XY0, 6XNN, ANNN
+  TokenMov = 0,      // 8XY0, 6XNN, ANNN
   TokenClear,    // 00E0
   TokenRet,      // 00EE
   TokenB,        // 1NNN
@@ -39,8 +39,41 @@ typedef enum {
   TokenReg,
   TokenConst,
   TokenAddr,
-  TokenComment
+  TokenComment,
+  TokenNull,
+  TokenCount
 } TokenType;
+
+static const char *instructions[] = {
+  "MOV",
+  "CLEAR",
+  "RET",
+  "B",
+  "CALL",
+  "IFE",
+  "ADD",
+  "OR",
+  "AND",
+  "XOR",
+  "SUB",
+  "LLS",
+  "SUS",
+  "LRS",
+  "IFNE",
+  "BA",
+  "RAND",
+  "DRW",
+  "IKE",
+  "IKN",
+  "GDL",
+  "GTK",
+  "SDL",
+  "SSD",
+  "SPR",
+  "BCD",
+  "DPR",
+  "LDR",
+};
 
 typedef struct {
   TokenType type;
@@ -52,7 +85,7 @@ typedef struct {
   token_t tokens[5];
 } instruction_t;
 
-union opcode {
+typedef union {
   struct __attribute__((packed)){
     uint16_t end: 4;
     uint16_t y: 4;
@@ -69,7 +102,7 @@ union opcode {
     uint16_t start: 4;
   } const_f;
   uint16_t   raw;
-};
+} opcode;
 
 int load_rom(char *filepath, size_t *filesize, uint8_t *mem);
 uint16_t fetch(uint8_t *mem, uint16_t *PC);

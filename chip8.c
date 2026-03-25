@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 
     /*   EXECUTION   */
     if(!done_exec){
-      union opcode op = { .raw = fetch(&mem[0], &PC) };
+      opcode op = { .raw = fetch(&mem[0], &PC) };
       printf("mem[PC]: %#x\nmem[PC+1]: %#x\nopcode: %#x\nPC: %d\n",
 	     mem[PC-2], mem[PC-1], op.raw, PC);
       if(PC > (filesize + 0x200)) done_exec = true;
