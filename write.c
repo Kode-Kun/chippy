@@ -23,8 +23,6 @@
 
 #include "common.h"
 
-#define ARRAY_SIZE(arr) (int)(sizeof(arr) / sizeof((arr)[0]))
-
 int main()
 {
   char *filename = "rom.ch8";

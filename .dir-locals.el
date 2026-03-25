@@ -1,0 +1,6 @@
+((c-mode . ((eval . (let ((project-include (expand-file-name "include" (locate-dominating-file default-directory ".dir-locals.el"))))
+                      (setq-local company-c-headers-path-user (list project-include))
+                      (setq-local company-clang-arguments (list (concat "-I" project-include)))))))
+ (c++-mode . ((eval . (let ((project-include (expand-file-name "include" (locate-dominating-file default-directory ".dir-locals.el"))))
+                        (setq-local company-c-headers-path-user (list project-include))
+                        (setq-local company-clang-arguments (list (concat "-I" project-include))))))))
