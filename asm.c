@@ -44,6 +44,13 @@ void free_symb(void)
 
 void append_symb(char* symb)
 {
+  symbol_table.symbols = realloc(symbol_table.symbols, (symbol_table.size + 1) * sizeof(char*));
+
+  if (symbol_table.symbols == NULL) {
+    perror("Failed to allocate symbol table");
+    exit(1);
+  }
+
   size_t symb_len = strlen(symb) + 1;
   symbol_table.symbols[symbol_table.size] = malloc(symb_len);
   strlcpy(symbol_table.symbols[symbol_table.size],
@@ -53,17 +60,12 @@ void append_symb(char* symb)
 
 char *get_symb(char *query)
 {
-  char *sep = ":\n\t\r";
+  int len = strlen(query);
   for(size_t i = 0; i < symbol_table.size; i++){
-    // get copy of symbol[i] in symbol table
-    int len = strlen(symbol_table.symbols[i]) + 1;
-    char *entry = malloc(len);
-    strlcpy(entry, symbol_table.symbols[i], len);
-
-    char *symbol = strtok(entry, sep);
-    if(strcmp(symbol, query) == 0) return strtok(NULL, sep);
-
-    free(entry);
+    char *current = symbol_table.symbols[i];
+    if(strncmp(current, query, len) == 0){
+      return current + len + 1;
+    }
   }
   return NULL;
 }
