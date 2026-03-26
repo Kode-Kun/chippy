@@ -28,6 +28,7 @@ int load_rom(char *filepath, size_t *filesize, uint8_t *mem)
   fseek(src_fd, 0, SEEK_SET);
   fread(&mem[0x200], 1, fsize, src_fd); //account for offset
   printf("Loaded %s (%zu bytes) successfully :3\n", filepath, fsize);
+  fclose(src_fd);
 
   return 0;
 }

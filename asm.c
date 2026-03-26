@@ -20,6 +20,8 @@
 
 #include "common.h"
 
+#define LABEL_MAX_SIZE 25
+
 struct symb_t {
   char **symbols;
   size_t size;
@@ -28,6 +30,15 @@ struct symb_t {
 void init_symb(void)
 {
   symbol_table.symbols = malloc(sizeof(char**));
+  symbol_table.size = 0;
+}
+
+void free_symb(void)
+{
+  for(size_t i = 0; i < symbol_table.size; i++){
+    free(symbol_table.symbols[i]);
+  }
+  free(symbol_table.symbols);
   symbol_table.size = 0;
 }
 
@@ -72,6 +83,45 @@ uint16_t str_to_hex(char *str)
   return hex;
 }
 
+void parse_labels(char *filepath)
+{
+  FILE *src_fd;
+
+  if ((src_fd = fopen(filepath, "r")) == NULL){
+    perror(filepath);
+    exit(1);
+  }
+
+  char *line = NULL;
+  size_t linelen;
+  size_t linecap = 0;
+  int address = 0x200;
+  int linenum = 1;
+
+  while((linelen = getline(&line, &linecap, src_fd) != -1)){
+    if(line[0] == '.'){
+      char *sep = " ,:\t\n\r";
+      char *l = malloc(LABEL_MAX_SIZE + 1);
+      strlcpy(l, line, LABEL_MAX_SIZE + 1);
+      char *label = strtok(l, sep);
+      if(get_symb(label) != NULL){
+	fprintf(stderr, "%s:%d:%d: %s", filepath, linenum, 0, LABEL_ERROR);
+	exit(1);
+      }
+      char *symbol = malloc(LABEL_MAX_SIZE + 7); // 7 to account for the :0xNNN that goes after the label
+      snprintf(symbol, LABEL_MAX_SIZE + 7, "%s:%#X", label, address);
+      append_symb(symbol);
+      free(l);
+      free(symbol);
+      linenum++;
+      continue;
+    }
+    if(line[0] != ';') address += 2;
+    linenum++;
+  }
+  fclose(src_fd);
+}
+
 instruction_t lex(char *line, int linenum)
 {
   char *l = line;
@@ -83,7 +133,7 @@ instruction_t lex(char *line, int linenum)
     .data = NULL,
     .type = TokenNull,
   };
-  char *sep = " ,\t\n\r";
+  char *sep = " ,:\t\n\r";
 
   while((data = strtok(l, sep)) != NULL){
     l = NULL;
@@ -97,8 +147,13 @@ instruction_t lex(char *line, int linenum)
       return inst;
       break;
     case '.':
-      tok.type = TokenLabel;
-      tok.data = data;
+      if(inst.count == 0){
+	tok.type = TokenLabel;
+	tok.data = data;
+      } else{
+	tok.type = TokenAddr;
+	tok.data = get_symb(data);
+      }
       break;
     case 'V':
     case 'v':
@@ -156,13 +211,6 @@ instruction_t lex(char *line, int linenum)
   return inst;
 }
 
-//opcode parse(instruction_t inst)
-//{
-//  for(int i = 0; i > inst.count; i++){
-//    fprintf(stderr, "Token %d: %s", i, (inst.tokens[i].type != TokenComment) ? instructions[inst.tokens[i].type] : "comment");
-//  }
-//}
-
 void chasm_handle_args(int argc, char **argv, char **input_path, char **rom_path)
 {
   int ch;
@@ -198,8 +246,11 @@ int main(int argc, char **argv)
 {
   char *input_path = NULL;
   char *rom_path   = NULL;
+  init_symb();
 
   chasm_handle_args(argc, argv, &input_path, &rom_path);
+  parse_labels(input_path);
+
   FILE *input_f = fopen(input_path, "r");
   FILE *rom_f = fopen(rom_path, "r");
   if(!input_f){
@@ -216,7 +267,6 @@ int main(int argc, char **argv)
   size_t linelen;
   size_t linecap = 0;
   int linenum = 1;
-  init_symb();
 
   while((linelen = getline(&line, &linecap, input_f) != -1)){
     instruction_t inst = lex(line, linenum);
@@ -231,21 +281,22 @@ int main(int argc, char **argv)
       }
     }
     fprintf(stderr, "}\n");
-    //opcode op = parse(lex(line)); // we parse the instruction returned by lex()
-    //if(op.raw == 0x0000) continue;
-    //write_be16(rom_f, op.raw)t
     linenum++;
   }
+
+  free(line);
 
   append_symb(".label1:0x223");
   append_symb(".label2:0x069");
 
   printf("%s\n", get_symb(".label1"));
   printf("%s\n", get_symb(".label2"));
-  char *symbol_1 = get_symb(".label3");
-  printf("%s\n", symbol_1 == NULL ? "Error: unkown symbol.\n" : symbol_1);
+  printf("%s\n", get_symb(".test"));
+  printf("%s\n", get_symb(".test2"));
 
   printf("Input argument: %s\n", input_path);
   printf("Rom path: %s\n", rom_path);
+
+  free_symb();
   return 0;
 }
