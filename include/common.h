@@ -7,6 +7,14 @@
 
 #define MEM_SIZE          3584
 
+#define REGISTER_ERROR         "Error: Invalid register format. Expected V0-VF.\n"
+#define CONSTANT8_SIZE_ERROR   "Error: Invalid constant. Expected #NN (0-255).\n"
+#define CONSTANT4_SIZE_ERROR   "Error: Invalid constant. Expected #N (0-15).\n"
+#define ADDRESS_BOUNDS_ERROR   "Error: Invalid address. Expected 0x200-0x7FF.\n"
+#define ADDRESS_NOTATION_ERROR "Error: Invalid address format. Expected 0xNNN.\n"
+#define LABEL_ERROR            "Error: Unknown label.\n"
+#define UNKNOWN_ERROR          "Error: Unkown token.\n"
+
 #define ARRAY_SIZE(arr) (int)(sizeof(arr) / sizeof((arr)[0]))
 
 typedef enum {

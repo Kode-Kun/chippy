@@ -6,7 +6,7 @@
 
 #include "common.h"
 
-instruction_t tokenize(char *line)
+instruction_t lex(char *line)
 {
   char *l = line;
   char *data;
@@ -19,49 +19,55 @@ instruction_t tokenize(char *line)
   };
   char *sep = " ,\t\n\r";
 
-  switch(line[0]){
-  case ';':
-    return (instruction_t) { .count = 1, .tokens = {nulltok} };
-    break;
-  }
-
   while((data = strtok(l, sep)) != NULL){
     l = NULL;
     token_t tok = nulltok;
-    tok.data = data;
 
     switch(data[0]){
     case ';':
+      tok.type = TokenComment;
+      inst.tokens[inst.count++] = tok;
       return inst;
       break;
     case '.':
-      return (instruction_t) {
-	.count = 1,
-	.tokens = {(token_t){ .data = data, .type = TokenLabel }}
-      };
+      tok.type = TokenLabel;
+      tok.data = data;
       break;
     case 'V':
     case 'v':
+      if(!(data[1] >= '0' && data[1] <= '9') && // if character after V isn't valid
+	 !(data[1] >= 'a' && data[1] <= 'f') &&
+	 !(data[1] >= 'A' && data[1] <= 'F')){
+	tok.type = TokenNull;
+	tok.data = REGISTER_ERROR;
+	break;
+      }
       tok.type = TokenReg;
+      tok.data = data;
       break;
     case '#':
       tok.type = TokenConst;
+      tok.data = data;
       break;
     case '0':
-      if(data[1] != 'x'){
-	tok = nulltok;
+      if(data[1] != 'x' && data[1] != 'X'){
+	tok.type = TokenNull;
+	tok.data = ADDRESS_NOTATION_ERROR;
 	break;
       }
       tok.type = TokenAddr;
+      tok.data = data;
+      break;
+    default:
       break;
     }
-    if(tok.type == TokenNull){
+
+    if(tok.type == TokenNull && tok.data == NULL){
       for(int i = 0; i < ARRAY_SIZE(instructions); i++){
 	tok = nulltok;
-
 	if(strcasecmp(data, instructions[i]) == 0){
-	  tok.data = data;
 	  tok.type = i;
+	  tok.data = data;
 	  break;
 	}
       }
@@ -132,16 +138,16 @@ int main(int argc, char **argv)
   size_t linecap = 0;
   //int linenum = 0;
 
-  int j = 0;
+  int j = 1;
   while((linelen = getline(&line, &linecap, input_f) != -1)){
-    instruction_t inst = tokenize(line);
+    instruction_t inst = lex(line);
     fprintf(stderr, "Instruction %d\n", j);
     for(int i = 0; i < inst.count; i++){
-      fprintf(stderr, "Token %d: %s of type %s\n", i, inst.tokens[i].data, token_to_str(inst.tokens[i].type));
+      fprintf(stderr, "Token %d: %s of type %s\n", i+1, inst.tokens[i].data, token_to_str(inst.tokens[i].type));
     }
-    //opcode op = parse(tokenize(line)); // we parse the instruction returned by tokenize()
+    //opcode op = parse(lex(line)); // we parse the instruction returned by lex()
     //if(op.raw == 0x0000) continue;
-    //write_be16(rom_f, op.raw);
+    //write_be16(rom_f, op.raw)t
     j++;
   }
 
