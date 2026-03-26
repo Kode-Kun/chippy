@@ -228,6 +228,8 @@ int main(int argc, char **argv)
 
   printf("%s\n", get_symb(".label1"));
   printf("%s\n", get_symb(".label2"));
+  char *symbol_1 = get_symb(".label3");
+  printf("%s\n", symbol_1 == NULL ? "Error: unkown symbol.\n" : symbol_1);
 
   printf("Input argument: %s\n", input_path);
   printf("Rom path: %s\n", rom_path);
