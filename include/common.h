@@ -73,7 +73,7 @@ typedef enum {
 static const char *instructions[] = {
   "MOV",
   "CLEAR",
-  "RET",
+  "RETURN",
   "B",
   "CALL",
   "IFE",
