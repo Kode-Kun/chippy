@@ -124,7 +124,7 @@ void parse_labels(char *filepath)
   fclose(src_fd);
 }
 
-instruction_t lex(char *line)
+instruction_t lex(char *line, char *filepath, int linenum)
 {
   char *l = line;
   char *data;
@@ -134,12 +134,14 @@ instruction_t lex(char *line)
   token_t nulltok = {
     .data = NULL,
     .type = TokenNull,
+    .line = linenum,
   };
   char *sep = " ,:\t\n\r";
 
   while((data = strtok(l, sep)) != NULL){
     l = NULL;
     token_t tok = nulltok;
+    tok.col = (int)(data - line);
 
     // check for non-instruction tokens
     switch(data[0]){
@@ -156,7 +158,7 @@ instruction_t lex(char *line)
 	tok.type = TokenAddr;
 	char *addr = get_symb(data);
 	if(addr == NULL){
-	  fprintf(stderr, "%s:%d:%d: %s", "source.chasm", 2, 0, LABEL_UNKOWN_ERROR);
+	  fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, LABEL_UNKOWN_ERROR);
 	  exit(1);
 	}
 	tok.data = get_symb(data);
@@ -167,9 +169,8 @@ instruction_t lex(char *line)
       if(!(data[1] >= '0' && data[1] <= '9') && // if character after V isn't valid
 	 !(data[1] >= 'a' && data[1] <= 'f') &&
 	 !(data[1] >= 'A' && data[1] <= 'F')){
-	tok.type = TokenNull;
-	tok.data = REGISTER_ERROR;
-	break;
+	fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, REGISTER_ERROR);
+	exit(1);
       }
       tok.type = TokenReg;
       tok.data = data;
@@ -185,9 +186,8 @@ instruction_t lex(char *line)
     case '0':
       if(data[1] != 'x' && data[1] != 'X' &&
 	 data[1] != 'b' && data[1] != 'B'){
-	tok.type = TokenNull;
-	tok.data = ADDRESS_NOTATION_ERROR;
-	break;
+	fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, ADDRESS_NOTATION_ERROR);
+	exit(1);
       }
       tok.type = TokenAddr;
       tok.data = data;
@@ -210,7 +210,8 @@ instruction_t lex(char *line)
 
     // if we still didn't get a match, return unkown error
     if(tok.type == TokenNull && tok.data == NULL){
-      tok.data = UNKNOWN_ERROR;
+      fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, UNKNOWN_ERROR);
+      exit(1);
     }
 
     inst.tokens[inst.count++] = tok;
@@ -281,7 +282,7 @@ int main(int argc, char **argv)
   int linenum = 1;
 
   while((linelen = getline(&line, &linecap, input_f) != -1)){
-    instruction_t inst = lex(line);
+    instruction_t inst = lex(line, input_path, linenum);
     fprintf(stderr, "Instruction %d {\n", linenum);
     for(int i = 0; i < inst.count; i++){
       token_t tok = inst.tokens[i];

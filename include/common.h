@@ -104,6 +104,8 @@ static const char *instructions[] = {
 typedef struct {
   TokenType type;
   char *data;
+  int line;
+  int col;
 } token_t;
 
 typedef struct {
