@@ -1,5 +1,5 @@
 /*
- * chippy : chip-8 emulator
+ * chippy : chip-8 emulator, assembler and disassembler
  * Copyright (C) 2026 Lui Sant'Ana Cardoso
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
