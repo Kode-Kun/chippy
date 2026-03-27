@@ -29,7 +29,7 @@ struct symb_t {
 
 void init_symb(void)
 {
-  symbol_table.symbols = malloc(sizeof(char**));
+  symbol_table.symbols = NULL;
   symbol_table.size = 0;
 }
 
@@ -53,7 +53,7 @@ void append_symb(char* symb)
 
   size_t symb_len = strlen(symb) + 1;
   symbol_table.symbols[symbol_table.size] = malloc(symb_len);
-  strlcpy(symbol_table.symbols[symbol_table.size],
+  strncpy(symbol_table.symbols[symbol_table.size],
 	  symb, symb_len);
   symbol_table.size++;
 }
@@ -104,7 +104,7 @@ void parse_labels(char *filepath)
     if(line[0] == '.'){
       char *sep = " ,:\t\n\r";
       char *l = malloc(LABEL_MAX_SIZE + 1);
-      strlcpy(l, line, LABEL_MAX_SIZE + 1);
+      strncpy(l, line, LABEL_MAX_SIZE + 1);
       char *label = strtok(l, sep);
       if(get_symb(label) != NULL){
 	fprintf(stderr, "%s:%d:%d: %s", filepath, linenum, 0, LABEL_ERROR);
@@ -124,7 +124,7 @@ void parse_labels(char *filepath)
   fclose(src_fd);
 }
 
-instruction_t lex(char *line, int linenum)
+instruction_t lex(char *line)
 {
   char *l = line;
   char *data;
@@ -154,6 +154,11 @@ instruction_t lex(char *line, int linenum)
 	tok.data = data;
       } else{
 	tok.type = TokenAddr;
+	char *addr = get_symb(data);
+	if(addr == NULL){
+	  fprintf(stderr, "%s:%d:%d: %s", "source.chasm", 2, 0, LABEL_UNKOWN_ERROR);
+	  exit(1);
+	}
 	tok.data = get_symb(data);
       }
       break;
@@ -211,6 +216,11 @@ instruction_t lex(char *line, int linenum)
     inst.tokens[inst.count++] = tok;
   }
   return inst;
+}
+
+opcode generate(instruction_t inst)
+{
+  // TODO
 }
 
 void chasm_handle_args(int argc, char **argv, char **input_path, char **rom_path)
@@ -271,7 +281,7 @@ int main(int argc, char **argv)
   int linenum = 1;
 
   while((linelen = getline(&line, &linecap, input_f) != -1)){
-    instruction_t inst = lex(line, linenum);
+    instruction_t inst = lex(line);
     fprintf(stderr, "Instruction %d {\n", linenum);
     for(int i = 0; i < inst.count; i++){
       token_t tok = inst.tokens[i];
@@ -294,7 +304,6 @@ int main(int argc, char **argv)
   printf("%s\n", get_symb(".label1"));
   printf("%s\n", get_symb(".label2"));
   printf("%s\n", get_symb(".test"));
-  printf("%s\n", get_symb(".test2"));
 
   printf("Input argument: %s\n", input_path);
   printf("Rom path: %s\n", rom_path);
