@@ -63,7 +63,7 @@ char *get_symb(char *query)
   int len = strlen(query);
   for(size_t i = 0; i < symbol_table.size; i++){
     char *current = symbol_table.symbols[i];
-    if(strncmp(current, query, len) == 0){
+    if(strncmp(current, query, len) == 0 && current[len] == ':'){
       return current + len + 1;
     }
   }
