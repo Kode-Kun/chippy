@@ -228,9 +228,9 @@ void chasm_handle_args(int argc, char **argv, char **input_path, char **rom_path
 {
   int ch;
 
-  while ((ch = getopt(argc, argv, "gf:o:")) != -1) {
+  while ((ch = getopt(argc, argv, "gi:o:")) != -1) {
     switch (ch) {
-    case 'f':
+    case 'i':
       *input_path = optarg;
       break;
     case 'o':
