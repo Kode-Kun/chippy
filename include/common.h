@@ -27,8 +27,8 @@
 #define ADDRESS_BOUNDS_ERROR   "error: Invalid address. Expected 0x200-0x7FF.\n"
 #define ADDRESS_NOTATION_ERROR "error: Invalid address format. Expected 0xNNN.\n"
 #define LABEL_ERROR            "error: Label name collision.\n"
-#define LABEL_UNKOWN_ERROR     "error: Unkown label.\n"
-#define UNKNOWN_ERROR          "error: Unkown token.\n"
+#define LABEL_UNKNOWN_ERROR     "error: Unknown label.\n"
+#define UNKNOWN_ERROR          "error: Unknown token.\n"
 
 #define ARRAY_SIZE(arr) (int)(sizeof(arr) / sizeof((arr)[0]))
 

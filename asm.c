@@ -157,8 +157,8 @@ instruction_t lex(char *line, char *filepath, int linenum)
       } else{
 	tok.type = TokenAddr;
 	char *addr = get_symb(data);
-	if(addr == NULL){
-	  fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, LABEL_UNKOWN_ERROR);
+	if(addr == NULL){  // if label being called doesn't exist in symbol table
+	  fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, LABEL_UNKNOWN_ERROR);
 	  exit(1);
 	}
 	tok.data = get_symb(data);
@@ -184,7 +184,7 @@ instruction_t lex(char *line, char *filepath, int linenum)
       tok.data = data;
       break;
     case '0':
-      if(data[1] != 'x' && data[1] != 'X' &&
+      if(data[1] != 'x' && data[1] != 'X' &&  // if character after 0 isn't valid (we only take decimal, hex (0x) and binary (0b)
 	 data[1] != 'b' && data[1] != 'B'){
 	fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, ADDRESS_NOTATION_ERROR);
 	exit(1);
@@ -210,7 +210,7 @@ instruction_t lex(char *line, char *filepath, int linenum)
 
     // if we still didn't get a match, return unkown error
     if(tok.type == TokenNull && tok.data == NULL){
-      fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, UNKNOWN_ERROR);
+      fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, UNKNOWN_ERROR); // if we encounter an invalid token altogether
       exit(1);
     }
 
