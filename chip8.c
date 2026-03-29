@@ -54,9 +54,9 @@ int main(int argc, char **argv)
 
   int ch;
 
-  while ((ch = getopt(argc, argv, "gf:")) != -1) {
+  while ((ch = getopt(argc, argv, "gi:")) != -1) {
     switch (ch) {
-    case 'f':
+    case 'i':
       filepath = optarg;
       break;
     case '?':
