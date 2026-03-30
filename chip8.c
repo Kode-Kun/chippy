@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 	     mem[PC-2], mem[PC-1], op.raw, PC);
       if(PC > (filesize + 0x200)) done_exec = true;
 
-      switch(op.base_f.start){
+      switch(op.start){
       case 0x0:
 	if(op.raw == 0x00E0){
 	  ClearBackground(BLACK);
@@ -118,55 +118,55 @@ int main(int argc, char **argv)
 	}
 	break;
       case 0x1:
-	PC = op.ad_f.address;
+	PC = op.address;
 	break;
       case 0x2:
 	stack_push(&s, PC);
-	PC = op.ad_f.address;
+	PC = op.address;
 	break;
       case 0x3:
-	if(regs[op.base_f.x] == op.const_f.const8) PC += 2;
+	if(regs[op.x] == op.const8) PC += 2;
 	break;
       case 0x4:
-	if(regs[op.base_f.x] != op.const_f.const8) PC += 2;
+	if(regs[op.x] != op.const8) PC += 2;
 	break;
       case 0x5:
-	if(regs[op.base_f.x] == regs[op.base_f.y]) PC += 2;
+	if(regs[op.x] == regs[op.y]) PC += 2;
 	break;
       case 0x6:
-	regs[op.base_f.x] = op.const_f.const8;
+	regs[op.x] = op.const8;
 	break;
       case 0x7:
-	regs[op.base_f.x] += op.const_f.const8;
+	regs[op.x] += op.const8;
 	break;
       case 0x8:
-	switch(op.base_f.end){
+	switch(op.end){
 	case 0x0:  //0x8XY0
-	  regs[op.base_f.x] = regs[op.base_f.y];
+	  regs[op.x] = regs[op.y];
 	  break;
 	case 0x1:  //0x8XY1
-	  regs[op.base_f.x] |= regs[op.base_f.y];
+	  regs[op.x] |= regs[op.y];
 	  break;
 	case 0x2:  //0x8XY2
-	  regs[op.base_f.x] &= regs[op.base_f.y];
+	  regs[op.x] &= regs[op.y];
 	  break;
 	case 0x3:  //0x8XY3
-	  regs[op.base_f.x] ^= regs[op.base_f.y];
+	  regs[op.x] ^= regs[op.y];
 	  break;
 	case 0x4:  //0x8XY4
-	  regs[op.base_f.x] += regs[op.base_f.y];
+	  regs[op.x] += regs[op.y];
 	  break;
 	case 0x5:  //0x8XY5
-	  regs[op.base_f.x] -= regs[op.base_f.y];
+	  regs[op.x] -= regs[op.y];
 	  break;
 	case 0x6:  //0x8XY6
-	  regs[op.base_f.x] = (regs[op.base_f.x] >> 1);
+	  regs[op.x] = (regs[op.x] >> 1);
 	  break;
 	case 0x7:  //0x8XY7
-	  regs[op.base_f.x] = (regs[op.base_f.y] - regs[op.base_f.x]);
+	  regs[op.x] = (regs[op.y] - regs[op.x]);
 	  break;
 	case 0xE:  //0x8XYE
-	  regs[op.base_f.x] = (regs[op.base_f.x] << 1);
+	  regs[op.x] = (regs[op.x] << 1);
 	  break;
 	default:
 	  fprintf(stderr, "ERROR: Opcode %#X is not a valid operation.\n", op.raw);
@@ -174,18 +174,18 @@ int main(int argc, char **argv)
 	}
 	break;
       case 0x9:
-	if(regs[op.base_f.x] != regs[op.base_f.y]) PC += 2;
+	if(regs[op.x] != regs[op.y]) PC += 2;
 	break;
       case 0xA:
-	I = op.ad_f.address;
+	I = op.address;
 	break;
       case 0xB:
-	PC = regs[0] + op.ad_f.address;
+	PC = regs[0] + op.address;
 	break;
       case 0xC: {
 	srand((unsigned) time(NULL));
 	uint8_t randint = (uint8_t)rand();
-	regs[op.base_f.x] = randint & op.const_f.const8;
+	regs[op.x] = randint & op.const8;
 	fprintf(stderr, "Random number:\t%#X\n", randint);
 	break;
       }

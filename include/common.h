@@ -27,7 +27,8 @@
 #define ADDRESS_BOUNDS_ERROR   "error: Invalid address. Expected 0x200-0x7FF.\n"
 #define ADDRESS_NOTATION_ERROR "error: Invalid address format. Expected 0xNNN.\n"
 #define LABEL_ERROR            "error: Label name collision.\n"
-#define LABEL_UNKNOWN_ERROR     "error: Unknown label.\n"
+#define LABEL_UNKNOWN_ERROR    "error: Unknown label.\n"
+#define INVALID_ORDER_ERROR    "error: Invalid instruction composition.\n"
 #define UNKNOWN_ERROR          "error: Unknown token.\n"
 
 #define ARRAY_SIZE(arr) (int)(sizeof(arr) / sizeof((arr)[0]))
@@ -119,16 +120,15 @@ typedef union {
     uint16_t y: 4;
     uint16_t x: 4;
     uint16_t start: 4;
-  } base_f;
+  };
   struct __attribute__((packed)){
     uint16_t address: 12;
-    uint16_t start: 4;
-  } ad_f;
+    uint16_t __pada: 4;
+  };
   struct __attribute__((packed)){
     uint16_t const8: 8;
-    uint16_t x: 4;
-    uint16_t start: 4;
-  } const_f;
+    uint16_t __padb: 8;
+  };
   uint16_t   raw;
 } opcode;
 

@@ -219,9 +219,37 @@ instruction_t lex(char *line, char *filepath, int linenum)
   return inst;
 }
 
-opcode generate(instruction_t inst)
+opcode generate(instruction_t inst, char* filename)
 {
-  // TODO
+  opcode op;
+
+  switch(inst.tokens[0].type){
+  case TokenMov:
+    if(strncmp(inst.tokens[1].data, "I", 1) == 0 &&
+       inst.tokens[2].type == TokenAddr){
+      op.start = 0xA;
+      op.address = (str_to_hex(inst.tokens[2].data) & 0xFFF);
+      break;
+    }
+    if(inst.tokens[1].type == TokenReg &&
+       inst.tokens[2].type == TokenConst){
+      op.start = 0x6;
+      op.x = (str_to_hex(&inst.tokens[1].data[1]) & 0xF);
+      op.const8 = (str_to_hex(&inst.tokens[2].data[1]) & 0xFF);
+      break;
+    }
+    if(inst.tokens[1].type == TokenReg &&
+       inst.tokens[2].type == TokenReg){
+      op.start = 0x8;
+      op.x = (str_to_hex(&inst.tokens[1].data[1]) & 0xF);
+      op.y = (str_to_hex(&inst.tokens[2].data[1]) & 0xF);
+    }
+    else{
+      fprintf(stderr, "%s:%d:%d: %s", filename, inst.tokens[1].line, inst.tokens[1].col, INVALID_ORDER_ERROR);
+      exit(1);
+    }
+  }
+  return op;
 }
 
 void chasm_handle_args(int argc, char **argv, char **input_path, char **rom_path)
@@ -283,6 +311,7 @@ int main(int argc, char **argv)
 
   while((linelen = getline(&line, &linecap, input_f) != -1)){
     instruction_t inst = lex(line, input_path, linenum);
+    opcode op = generate(inst, input_path);
     fprintf(stderr, "Instruction %d {\n", linenum);
     for(int i = 0; i < inst.count; i++){
       token_t tok = inst.tokens[i];
@@ -293,6 +322,7 @@ int main(int argc, char **argv)
 	fprintf(stderr, "Value of %s: %d.\n", tok.data, tok.type == TokenConst ? str_to_hex(&tok.data[1]) : str_to_hex(tok.data));
       }
     }
+    fprintf(stderr, "Opcode: %#X\n", op);
     fprintf(stderr, "}\n");
     linenum++;
   }
