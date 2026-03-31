@@ -1,7 +1,9 @@
 # Chippy
 
 This repository, although named `chippy`, includes also `chasm`, a small toy assembler made to aid in the development of `chippy` by facilitating the task of writing test programs.
+
 `chippy` is an emulator / virtual machine[^1] of the [chip-8](https://en.wikipedia.org/wiki/CHIP-8) architecture, written completely in C, with graphics and input done with [raylib](https://www.raylib.com/).
+
 `chasm` is an assembler that compiles `chasm` assembly into chip-8 bytecode. For a reference on the language / mnemonics, consult the `todo.md` file or, better yet, my [blogpost](https://readthemanpage.dev/posts/into_assemblers) about this project. It is a toy assembler made for testing and educational purposes only. It currently only implements the base CHIP-8 instructions.
 
 `chippy` and by extension `chasm` implement only the base CHIP-8 specification, as it is the most well-documented one. SUPER-CHIP support might come in the future.
