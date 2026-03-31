@@ -16,21 +16,20 @@ To build it on Linux, download raylib on your machine, then copy the `lib/` and 
 ### Mac
 To build it on mac, install raylib on your machine with homebrew and change the `RAYLIB_PATH` in the Makefile to the path of your raylib installation.
 
-Then, simply run
-
+Then, for the `chippy` virtual machine, run:
 ```bash
 make chippy
 ```
-for the chip-8 virtual machine,
+for the `chasm` assembler, run:
 ```bash
 make chasm
 ```
-for the chasm assembler and
+and for for the write utility (**OBSOLETE**, replaced by `chasm`), run:
 ```bash
 make write
 ```
-for the write utility.
+
+`chippy` is licensed under the GPL-3.0 (see LICENSE.md).
 
 [^1]: It may be more accurate to refer to any chip-8 implementation as a virtual machine, since it's not actually emulating any real hardware. However, since writing a chip-8 virtual machine is considered a great entry point into the world of emulator development, I often refer to it as an emulator.
 
-`chippy` is licensed under the GPL-3.0 (see LICENSE.md).
