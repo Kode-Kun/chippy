@@ -28,40 +28,40 @@
 #define ADDRESS_NOTATION_ERROR "error: Invalid address format. Expected 0xNNN.\n"
 #define LABEL_ERROR            "error: Label name collision.\n"
 #define LABEL_UNKNOWN_ERROR    "error: Unknown label.\n"
-#define INVALID_ORDER_ERROR    "error: Invalid instruction composition.\n"
+#define INVALID_COMP_ERROR     "error: Invalid instruction composition.\n"
 #define UNKNOWN_ERROR          "error: Unknown token.\n"
 
 #define ARRAY_SIZE(arr) (int)(sizeof(arr) / sizeof((arr)[0]))
 
 typedef enum {
   TokenMov = 0,      // 8XY0, 6XNN, ANNN
-  TokenClear,    // 00E0
-  TokenRet,      // 00EE
-  TokenB,        // 1NNN
-  TokenCall,     // 2NNN
-  TokenIfe,      // 5XY0
-  TokenAdd,      // 7XNN, 8XY4, FX1E
-  TokenOr,       // 8XY1
-  TokenAnd,      // 8XY2
-  TokenXor,      // 8XY3
-  TokenSub,      // 8XY5
-  TokenLls,      // 8XY6
-  TokenSus,      // 8XY7
-  TokenLrs,      // 8XYE
-  TokenIfne,     // 9XY0
-  TokenBa,       // BNNN
-  TokenRand,     // CXNN
-  TokenDrw,      // DXYN
-  TokenIke,      // EX9E
-  TokenIkn,      // EXA1
-  TokenGdl,      // FX07
-  TokenGtk,      // FX0A
-  TokenSdl,      // FX15
-  TokenSsd,      // FX18
-  TokenSpr,      // FX29
-  TokenBcd,      // FX33
-  TokenDpr,      // FX55
-  TokenLdr,      // FX65
+  TokenClear,        // 00E0
+  TokenRet,          // 00EE
+  TokenB,            // 1NNN
+  TokenCall,         // 2NNN
+  TokenIfe,          // 5XY0
+  TokenAdd,          // 7XNN, 8XY4, FX1E
+  TokenOr,           // 8XY1
+  TokenAnd,          // 8XY2
+  TokenXor,          // 8XY3
+  TokenSub,          // 8XY5
+  TokenLls,          // 8XY6
+  TokenSus,          // 8XY7
+  TokenLrs,          // 8XYE
+  TokenIfne,         // 9XY0
+  TokenBa,           // BNNN
+  TokenRand,         // CXNN
+  TokenDrw,          // DXYN
+  TokenIke,          // EX9E
+  TokenIkn,          // EXA1
+  TokenGdl,          // FX07
+  TokenGtk,          // FX0A
+  TokenSdl,          // FX15
+  TokenSsd,          // FX18
+  TokenSpr,          // FX29
+  TokenBcd,          // FX33
+  TokenDpr,          // FX55
+  TokenLdr,          // FX65
   TokenReg,
   TokenConst,
   TokenAddr,

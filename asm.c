@@ -243,9 +243,11 @@ opcode generate(instruction_t inst, char* filename)
       op.start = 0x8;
       op.x = (str_to_hex(&inst.tokens[1].data[1]) & 0xF);
       op.y = (str_to_hex(&inst.tokens[2].data[1]) & 0xF);
+      op.end = 0x0;
+      break;
     }
     else{
-      fprintf(stderr, "%s:%d:%d: %s", filename, inst.tokens[1].line, inst.tokens[1].col, INVALID_ORDER_ERROR);
+      fprintf(stderr, "%s:%d:%d: %s", filename, inst.tokens[1].line, inst.tokens[1].col, INVALID_COMP_ERROR);
       exit(1);
     }
   }
@@ -293,7 +295,7 @@ int main(int argc, char **argv)
   parse_labels(input_path);
 
   FILE *input_f = fopen(input_path, "r");
-  FILE *rom_f = fopen(rom_path, "r");
+  FILE *rom_f = fopen(rom_path, "w");
   if(!input_f){
     perror(input_path);
     exit(1);
@@ -310,6 +312,7 @@ int main(int argc, char **argv)
   int linenum = 1;
 
   while((linelen = getline(&line, &linecap, input_f) != -1)){
+    if(strncmp(line, "\n", 1) == 0 || strncmp(line, "\r\n", 2) == 0) continue; //skip newlines
     instruction_t inst = lex(line, input_path, linenum);
     opcode op = generate(inst, input_path);
     fprintf(stderr, "Instruction %d {\n", linenum);
@@ -324,6 +327,7 @@ int main(int argc, char **argv)
     }
     fprintf(stderr, "Opcode: %#X\n", op);
     fprintf(stderr, "}\n");
+    write_be16(rom_f, op.raw);
     linenum++;
   }
 
@@ -334,7 +338,6 @@ int main(int argc, char **argv)
 
   printf("%s\n", get_symb(".label1"));
   printf("%s\n", get_symb(".label2"));
-  printf("%s\n", get_symb(".test"));
 
   printf("Input argument: %s\n", input_path);
   printf("Rom path: %s\n", rom_path);
