@@ -399,11 +399,12 @@ int main(int argc, char **argv)
   char *line = NULL;
   size_t linelen;
   size_t linecap = 0;
-  int linenum = 1;
+  int linenum = 0;
 
   size_t bytes = 0;
 
   while((linelen = getline(&line, &linecap, input_f) != -1)){
+    linenum++;
     if(strncmp(line, "\n", 1) == 0 || strncmp(line, "\r\n", 2) == 0) continue; //skip newlines
     instruction_t inst = lex(line, input_path, linenum);
     if(inst.tokens[0].type == TokenLabel ||
@@ -425,7 +426,6 @@ int main(int argc, char **argv)
     }
     write_be16(rom_f, op.raw);
     bytes += 2;
-    linenum++;
   }
 
   printf("%s:0:0: info: Succesfully wrote %zu bytes to %s.\n", input_path, bytes, rom_path);
