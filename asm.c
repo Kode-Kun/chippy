@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "common.h"
 
@@ -70,11 +71,11 @@ char *get_symb(char *query)
   return NULL;
 }
 
-uint16_t str_to_hex(char *str)
+uint16_t str_to_hex(char *str, int base)
 {
   uint16_t hex;
   char *endptr;
-  long int decimal = strtol(str, &endptr, 0);
+  long int decimal = strtol(str, &endptr, base);
 
   // bounds-checking: constants and addresses can't go above 0xFFF
   if(decimal > 0xFFF){
@@ -107,7 +108,7 @@ void parse_labels(char *filepath)
       strncpy(l, line, LABEL_MAX_SIZE + 1);
       char *label = strtok(l, sep);
       if(get_symb(label) != NULL){
-	fprintf(stderr, "%s:%d:%d: %s", filepath, linenum, 0, LABEL_ERROR);
+	fprintf(stderr, ERROR_FORMAT, filepath, linenum, 0, LABEL_ERROR);
 	exit(1);
       }
       char *symbol = malloc(LABEL_MAX_SIZE + 7); // 7 to account for the :0xNNN that goes after the label
@@ -158,7 +159,7 @@ instruction_t lex(char *line, char *filepath, int linenum)
 	tok.type = TokenAddr;
 	char *addr = get_symb(data);
 	if(addr == NULL){  // if label being called doesn't exist in symbol table
-	  fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, LABEL_UNKNOWN_ERROR);
+	  fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, LABEL_UNKNOWN_ERROR);
 	  exit(1);
 	}
 	tok.data = get_symb(data);
@@ -169,24 +170,33 @@ instruction_t lex(char *line, char *filepath, int linenum)
       if(!(data[1] >= '0' && data[1] <= '9') && // if character after V isn't valid
 	 !(data[1] >= 'a' && data[1] <= 'f') &&
 	 !(data[1] >= 'A' && data[1] <= 'F')){
-	fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, REGISTER_ERROR);
+	fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, REGISTER_ERROR);
 	exit(1);
       }
       tok.type = TokenReg;
       tok.data = data;
       break;
     case 'I':
+      if(strcmp(data, "I") != 0) break;
       tok.type = TokenReg;
       tok.data = data;
       break;
     case '#':
+      if(str_to_hex(data, 0) > 0xFF){
+	fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, CONSTANT8_SIZE_ERROR);
+	exit(1);
+      }
       tok.type = TokenConst;
       tok.data = data;
       break;
     case '0':
-      if(data[1] != 'x' && data[1] != 'X' &&  // if character after 0 isn't valid (we only take decimal, hex (0x) and binary (0b)
+      if(data[1] != 'x' && data[1] != 'X' &&
 	 data[1] != 'b' && data[1] != 'B'){
-	fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, ADDRESS_NOTATION_ERROR);
+	fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, ADDRESS_NOTATION_ERROR);
+	exit(1);
+      }
+      if(str_to_hex(data, 0) > 0xFFF){
+	fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, ADDRESS_BOUNDS_ERROR);
 	exit(1);
       }
       tok.type = TokenAddr;
@@ -210,7 +220,7 @@ instruction_t lex(char *line, char *filepath, int linenum)
 
     // if we still didn't get a match, return unkown error
     if(tok.type == TokenNull && tok.data == NULL){
-      fprintf(stderr, "%s:%d:%d: %s", filepath, tok.line, tok.col, UNKNOWN_ERROR); // if we encounter an invalid token altogether
+      fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, UNKNOWN_ERROR); // if we encounter an invalid token altogether
       exit(1);
     }
 
@@ -219,42 +229,118 @@ instruction_t lex(char *line, char *filepath, int linenum)
   return inst;
 }
 
-opcode generate(instruction_t inst, char* filename)
+opcode generate(instruction_t i, char* filename)
 {
   opcode op;
 
-  switch(inst.tokens[0].type){
+  TokenType tok_type = i.tokens[0].type;
+  switch(i.tokens[0].type){
   case TokenMov:
-    if(strncmp(inst.tokens[1].data, "I", 1) == 0 &&
-       inst.tokens[2].type == TokenAddr){
+    // MOV I, NNN
+    if(strncmp(i.tokens[1].data, "I", 1) == 0 &&
+       i.tokens[2].type == TokenAddr){
       op.start = 0xA;
-      op.address = (str_to_hex(inst.tokens[2].data) & 0xFFF);
+      op.address = (str_to_hex(i.tokens[2].data, 0) & 0xFFF);
       break;
     }
-    if(inst.tokens[1].type == TokenReg &&
-       inst.tokens[2].type == TokenConst){
+    // MOV Vx, #NN
+    if(i.tokens[1].type == TokenReg &&
+       i.tokens[2].type == TokenConst){
       op.start = 0x6;
-      op.x = (str_to_hex(&inst.tokens[1].data[1]) & 0xF);
-      op.const8 = (str_to_hex(&inst.tokens[2].data[1]) & 0xFF);
+      op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
+      op.const8 = (str_to_hex(&i.tokens[2].data[1], 0) & 0xFF);
       break;
     }
-    if(inst.tokens[1].type == TokenReg &&
-       inst.tokens[2].type == TokenReg){
+    // MOV Vx, Vy
+    if(i.tokens[1].type == TokenReg &&
+       i.tokens[2].type == TokenReg){
       op.start = 0x8;
-      op.x = (str_to_hex(&inst.tokens[1].data[1]) & 0xF);
-      op.y = (str_to_hex(&inst.tokens[2].data[1]) & 0xF);
+      op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
+      op.y = (str_to_hex(&i.tokens[2].data[1], 16) & 0xF);
       op.end = 0x0;
       break;
     }
     else{
-      fprintf(stderr, "%s:%d:%d: %s", filename, inst.tokens[1].line, inst.tokens[1].col, INVALID_COMP_ERROR);
+      // invalid operation structure
+      fprintf(stderr, ERROR_FORMAT, filename, i.tokens[1].line, i.tokens[1].col, INVALID_COMP_ERROR);
       exit(1);
     }
+  case TokenAdd:
+    if(strncmp(i.tokens[1].data, "I", 1) == 0 &&
+       i.tokens[2].type == TokenReg){
+      op.start = 0xF;
+      op.x = (str_to_hex(&i.tokens[2].data[1], 16) & 0xFFF);
+      op.const8 = 0x1E;
+      break;
+    }
+    // ADD Vx, #NN
+    if(i.tokens[1].type == TokenReg &&
+       i.tokens[2].type == TokenConst){
+      op.start = 0x7;
+      op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
+      op.const8 = (str_to_hex(&i.tokens[2].data[1], 0) & 0xFF);
+      break;
+    }
+    // ADD Vx, Vy
+    if(i.tokens[1].type == TokenReg &&
+       i.tokens[2].type == TokenReg){
+      op.start = 0x8;
+      op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
+      op.y = (str_to_hex(&i.tokens[2].data[1], 16) & 0xF);
+      op.end = 0x4;
+      break;
+    }
+    else{
+      // invalid operation structure
+      fprintf(stderr, ERROR_FORMAT, filename, i.tokens[1].line, i.tokens[1].col, INVALID_COMP_ERROR);
+      exit(1);
+    }
+  case TokenIfe:
+  case TokenIfne:
+    // IFE Vx, #NN
+    // IFNE Vx, #NN
+    if(i.tokens[1].type == TokenReg &&
+       i.tokens[2].type == TokenConst){
+      if(tok_type == TokenIfe)  op.start = 0x3;
+      if(tok_type == TokenIfne) op.start = 0x4;
+      op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
+      op.const8 = (str_to_hex(&i.tokens[2].data[1], 0) & 0xFF);
+      break;
+    }
+    // IFE Vx, Vy
+    // IFNE Vx, Vy
+    if(i.tokens[1].type == TokenReg &&
+       i.tokens[2].type == TokenReg){
+      if(tok_type == TokenIfe)  op.start = 0x5;
+      if(tok_type == TokenIfne) op.start = 0x9;
+      op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
+      op.y = (str_to_hex(&i.tokens[2].data[1], 16) & 0xF);
+      op.end = 0x0;
+
+    }
+  case TokenB:
+  case TokenBa:
+  case TokenCall:
+    if(i.tokens[1].type != TokenAddr){
+      fprintf(stderr, ERROR_FORMAT, filename, i.tokens[1].line, i.tokens[1].col, INVALID_COMP_ERROR);
+      exit(1);
+    }
+    if(tok_type == TokenB)    op.start = 0x1;
+    if(tok_type == TokenBa)   op.start = 0xB;
+    if(tok_type == TokenCall) op.start = 0x2;
+    op.address = (str_to_hex(i.tokens[1].data, 0) & 0xFFF);
+    break;
+  case TokenRet:
+    op.raw = 0x00EE;
+    break;
+  case TokenClear:
+    op.raw = 0x00E0;
+    break;
   }
   return op;
 }
 
-void chasm_handle_args(int argc, char **argv, char **input_path, char **rom_path)
+void chasm_handle_args(int argc, char **argv, char **input_path, char **rom_path, bool *debug)
 {
   int ch;
 
@@ -265,6 +351,9 @@ void chasm_handle_args(int argc, char **argv, char **input_path, char **rom_path
       break;
     case 'o':
       *rom_path = optarg;
+      break;
+    case 'g':
+      *debug = true;
       break;
     case '?':
       if(optopt == 'f') fprintf(stderr, "Option -%c requires an argument.\n", optopt);
@@ -291,7 +380,8 @@ int main(int argc, char **argv)
   char *rom_path   = NULL;
   init_symb();
 
-  chasm_handle_args(argc, argv, &input_path, &rom_path);
+  bool debug = false;
+  chasm_handle_args(argc, argv, &input_path, &rom_path, &debug);
   parse_labels(input_path);
 
   FILE *input_f = fopen(input_path, "r");
@@ -311,36 +401,40 @@ int main(int argc, char **argv)
   size_t linecap = 0;
   int linenum = 1;
 
+  size_t bytes = 0;
+
   while((linelen = getline(&line, &linecap, input_f) != -1)){
     if(strncmp(line, "\n", 1) == 0 || strncmp(line, "\r\n", 2) == 0) continue; //skip newlines
     instruction_t inst = lex(line, input_path, linenum);
+    if(inst.tokens[0].type == TokenLabel ||
+       inst.tokens[0].type == TokenComment) continue;
     opcode op = generate(inst, input_path);
-    fprintf(stderr, "Instruction %d {\n", linenum);
-    for(int i = 0; i < inst.count; i++){
-      token_t tok = inst.tokens[i];
+    if(debug){
+      fprintf(stderr, "Instruction %d {\n", linenum);
+      for(int i = 0; i < inst.count; i++){
+	token_t tok = inst.tokens[i];
 
-      fprintf(stderr, "  Token %d: %s of type %s\n", i+1, tok.data,
-	      token_to_str(tok.type));
-      if(tok.type == TokenAddr || tok.type == TokenConst){
-	fprintf(stderr, "Value of %s: %d.\n", tok.data, tok.type == TokenConst ? str_to_hex(&tok.data[1]) : str_to_hex(tok.data));
+	fprintf(stderr, "  Token %d: %s of type %s\n", i+1, tok.data,
+		token_to_str(tok.type));
+	if(tok.type == TokenAddr || tok.type == TokenConst){
+	  fprintf(stderr, "Value of %s: %d.\n", tok.data, tok.type == TokenConst ? str_to_hex(&tok.data[1], 0) : str_to_hex(tok.data, 0));
+	}
       }
+      fprintf(stderr, "Opcode: %#X\n", op);
+      fprintf(stderr, "}\n");
     }
-    fprintf(stderr, "Opcode: %#X\n", op);
-    fprintf(stderr, "}\n");
     write_be16(rom_f, op.raw);
+    bytes += 2;
     linenum++;
   }
 
+  printf("%s:0:0: info: Succesfully wrote %zu bytes to %s.\n", input_path, bytes, rom_path);
   free(line);
 
-  append_symb(".label1:0x223");
-  append_symb(".label2:0x069");
-
-  printf("%s\n", get_symb(".label1"));
-  printf("%s\n", get_symb(".label2"));
-
-  printf("Input argument: %s\n", input_path);
-  printf("Rom path: %s\n", rom_path);
+  if(debug){
+    printf("Input argument: %s\n", input_path);
+    printf("Rom path: %s\n", rom_path);
+  }
 
   free_symb();
   return 0;

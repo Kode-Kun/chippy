@@ -21,10 +21,11 @@
 
 #define MEM_SIZE          3584
 
+#define ERROR_FORMAT           "%s:%d:%d: %s"
 #define REGISTER_ERROR         "error: Invalid register format. Expected V0-VF.\n"
 #define CONSTANT8_SIZE_ERROR   "error: Invalid constant. Expected #NN (0-255).\n"
 #define CONSTANT4_SIZE_ERROR   "error: Invalid constant. Expected #N (0-15).\n"
-#define ADDRESS_BOUNDS_ERROR   "error: Invalid address. Expected 0x200-0x7FF.\n"
+#define ADDRESS_BOUNDS_ERROR   "error: Invalid address. Expected 0x200-0xFFF.\n"
 #define ADDRESS_NOTATION_ERROR "error: Invalid address format. Expected 0xNNN.\n"
 #define LABEL_ERROR            "error: Label name collision.\n"
 #define LABEL_UNKNOWN_ERROR    "error: Unknown label.\n"
