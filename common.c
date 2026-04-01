@@ -1,5 +1,5 @@
 /*
- * chippy : chip-8 emulator, assembler and disassembler
+ * chippy, chasm: chip-8 emulator and assembler
  * Copyright (C) 2026 Lui Sant'Ana Cardoso
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,118 +77,118 @@ bool is_empty_line(char *l)
 }
 
 
-char *token_to_str(TokenType t)
+char *token_to_str(token_kind_t k)
 {
-  char *type;
-  switch(t){
+  char *kind;
+  switch(k){
   case TokenMov:
-    type = "TokenMov";
+    kind = "TokenMov";
     break;
   case TokenClear:
-    type = "TokenClear";
+    kind = "TokenClear";
     break;
   case TokenRet:
-    type = "TokenRet";
+    kind = "TokenRet";
     break;
   case TokenB:
-    type = "TokenB";
+    kind = "TokenB";
     break;
   case TokenCall:
-    type = "TokenCall";
+    kind = "TokenCall";
     break;
   case TokenIfe:
-    type = "TokenIfe";
+    kind = "TokenIfe";
     break;
   case TokenAdd:
-    type = "TokenAdd";
+    kind = "TokenAdd";
     break;
   case TokenOr:
-    type = "TokenOr";
+    kind = "TokenOr";
     break;
   case TokenAnd:
-    type = "TokenAnd";
+    kind = "TokenAnd";
     break;
   case TokenXor:
-    type = "TokenXor";
+    kind = "TokenXor";
     break;
   case TokenSub:
-    type = "TokenSub";
+    kind = "TokenSub";
     break;
   case TokenLls:
-    type = "TokenLls";
+    kind = "TokenLls";
     break;
   case TokenSus:
-    type = "TokenSus";
+    kind = "TokenSus";
     break;
   case TokenLrs:
-    type = "TokenLrs";
+    kind = "TokenLrs";
     break;
   case TokenIfne:
-    type = "TokenIfne";
+    kind = "TokenIfne";
     break;
   case TokenBa:
-    type = "TokenBa";
+    kind = "TokenBa";
     break;
   case TokenRand:
-    type = "TokenRand";
+    kind = "TokenRand";
     break;
   case TokenDrw:
-    type = "TokenDrw";
+    kind = "TokenDrw";
     break;
   case TokenIke:
-    type = "TokenIke";
+    kind = "TokenIke";
     break;
   case TokenIkn:
-    type = "TokenIkn";
+    kind = "TokenIkn";
     break;
   case TokenGdl:
-    type = "TokenGdl";
+    kind = "TokenGdl";
     break;
   case TokenGtk:
-    type = "TokenGtk";
+    kind = "TokenGtk";
     break;
   case TokenSdl:
-    type = "TokenSdl";
+    kind = "TokenSdl";
     break;
   case TokenSsd:
-    type = "TokenSsd";
+    kind = "TokenSsd";
     break;
   case TokenSpr:
-    type = "TokenSpr";
+    kind = "TokenSpr";
     break;
   case TokenBcd:
-    type = "TokenBcd";
+    kind = "TokenBcd";
     break;
   case TokenDpr:
-    type = "TokenDpr";
+    kind = "TokenDpr";
     break;
   case TokenLdr:
-    type = "TokenLdr";
+    kind = "TokenLdr";
     break;
   case TokenReg:
-    type = "TokenReg";
+    kind = "TokenReg";
     break;
   case TokenConst:
-    type = "TokenConst";
+    kind = "TokenConst";
     break;
   case TokenAddr:
-    type = "TokenAddr";
+    kind = "TokenAddr";
     break;
   case TokenComment:
-    type = "TokenComment";
+    kind = "TokenComment";
     break;
   case TokenLabel:
-    type = "TokenLabel";
+    kind = "TokenLabel";
     break;
   case TokenNull:
-    type = "TokenNull";
+    kind = "TokenNull";
     break;
   case TokenCount:
-    type = "TokenCount";
+    kind = "TokenCount";
     break;
   default:
-    type = "Unknown!";
+    kind = "Unknown!";
     break;
   }
-  return type;
+  return kind;
 }

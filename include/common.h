@@ -1,5 +1,5 @@
 /*
- * chippy : chip-8 emulator, assembler and disassembler
+ * chippy, chasm: chip-8 emulator and assembler
  * Copyright (C) 2026 Lui Sant'Ana Cardoso
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #define CONSTANT4_SIZE_ERROR   "error: Invalid constant. Expected #N (0-15).\n"
 #define ADDRESS_BOUNDS_ERROR   "error: Invalid address. Expected 0x200-0xFFF.\n"
 #define ADDRESS_NOTATION_ERROR "error: Invalid address format. Expected 0xNNN.\n"
+#define TOO_MANY_TOKS_ERROR    "error: Too many tokens.\n"
 #define LABEL_ERROR            "error: Label name collision.\n"
 #define LABEL_UNKNOWN_ERROR    "error: Unknown label.\n"
 #define INVALID_COMP_ERROR     "error: Invalid instruction composition.\n"
@@ -71,7 +72,7 @@ typedef enum {
   TokenLabel,
   TokenNull,
   TokenCount
-} TokenType;
+} token_kind_t;
 
 static const char *instructions[] = {
   "MOV",
@@ -105,7 +106,7 @@ static const char *instructions[] = {
 };
 
 typedef struct {
-  TokenType type;
+  token_kind_t kind;
   char *data;
   int line;
   int col;
@@ -132,12 +133,12 @@ typedef union {
     uint16_t __padb: 8;
   };
   uint16_t   raw;
-} opcode;
+} opcode_t;
 
 int load_rom(char *filepath, size_t *filesize, uint8_t *mem);
 uint16_t fetch(uint8_t *mem, uint16_t *PC);
 uint8_t write_be16(FILE *f, uint16_t v);
-char *token_to_str(TokenType t);
+char *token_to_str(token_kind_t k);
 bool is_empty_line(char *l);
 
 #endif

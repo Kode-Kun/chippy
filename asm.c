@@ -1,5 +1,5 @@
 /*
- * chippy : chip-8 emulator, assembler and disassembler
+ * chasm : chip-8 assembler
  * Copyright (C) 2026 Lui Sant'Ana Cardoso
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,9 +78,9 @@ uint16_t str_to_hex(char *str, int base)
   long int decimal = strtol(str, &endptr, base);
 
   // bounds-checking: constants and addresses can't go above 0xFFF
-  //if(decimal > 0xFFF){
-  //  str = NULL;
-  //}
+  if(decimal > 0xFFF){
+    str = NULL;
+  }
 
   hex = (uint16_t) decimal;
   return hex;
@@ -96,12 +96,12 @@ void parse_labels(char *filepath)
   }
 
   char *line = NULL;
-  size_t linelen;
+  ssize_t linelen;
   size_t linecap = 0;
   int address = 0x200;
   int linenum = 1;
 
-  while((linelen = getline(&line, &linecap, src_fd) != -1)){
+  while((linelen = getline(&line, &linecap, src_fd)) != -1){
     if(line[0] == '.'){
       char *sep = " ,:\t\n\r";
       char *l = malloc(LABEL_MAX_SIZE + 1);
@@ -119,10 +119,10 @@ void parse_labels(char *filepath)
       linenum++;
       continue;
     }
-    // TODO: fix bug
     if(line[0] != ';' && !is_empty_line(line)) address += 2;
     linenum++;
   }
+  free(line);
   fclose(src_fd);
 }
 
@@ -135,7 +135,7 @@ instruction_t lex(char *line, char *filepath, int linenum)
   };
   token_t nulltok = {
     .data = NULL,
-    .type = TokenNull,
+    .kind = TokenNull,
     .line = linenum,
   };
   char *sep = " ,:\t\n\r";
@@ -148,16 +148,16 @@ instruction_t lex(char *line, char *filepath, int linenum)
     // check for non-instruction tokens
     switch(data[0]){
     case ';':
-      tok.type = TokenComment;
+      tok.kind = TokenComment;
       inst.tokens[inst.count++] = tok;
       return inst;
       break;
     case '.':
       if(inst.count == 0){
-	tok.type = TokenLabel;
+	tok.kind = TokenLabel;
 	tok.data = data;
       } else{
-	tok.type = TokenAddr;
+	tok.kind = TokenAddr;
 	char *addr = get_symb(data);
 	if(addr == NULL){  // if label being called doesn't exist in symbol table
 	  fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, LABEL_UNKNOWN_ERROR);
@@ -174,20 +174,20 @@ instruction_t lex(char *line, char *filepath, int linenum)
 	fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, REGISTER_ERROR);
 	exit(1);
       }
-      tok.type = TokenReg;
+      tok.kind = TokenReg;
       tok.data = data;
       break;
     case 'I':
       if(strcmp(data, "I") != 0) break;
-      tok.type = TokenReg;
+      tok.kind = TokenReg;
       tok.data = data;
       break;
     case '#':
-      if(str_to_hex(&data[1], 0) > 0xFF){
+      if(str_to_hex(data, 0) > 0xFF){
 	fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, CONSTANT8_SIZE_ERROR);
 	exit(1);
       }
-      tok.type = TokenConst;
+      tok.kind = TokenConst;
       tok.data = data;
       break;
     case '0':
@@ -200,7 +200,7 @@ instruction_t lex(char *line, char *filepath, int linenum)
 	fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, ADDRESS_BOUNDS_ERROR);
 	exit(1);
       }
-      tok.type = TokenAddr;
+      tok.kind = TokenAddr;
       tok.data = data;
       break;
     default:
@@ -208,11 +208,11 @@ instruction_t lex(char *line, char *filepath, int linenum)
     }
 
     // check for instruction tokens
-    if(tok.type == TokenNull && tok.data == NULL){
+    if(tok.kind == TokenNull && tok.data == NULL){
       for(int i = 0; i < ARRAY_SIZE(instructions); i++){
 	tok = nulltok;
 	if(strcasecmp(data, instructions[i]) == 0){
-	  tok.type = i;
+	  tok.kind = i;
 	  tok.data = data;
 	  break;
 	}
@@ -220,41 +220,45 @@ instruction_t lex(char *line, char *filepath, int linenum)
     }
 
     // if we still didn't get a match, return unkown error
-    if(tok.type == TokenNull && tok.data == NULL){
+    if(tok.kind == TokenNull && tok.data == NULL){
       fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, UNKNOWN_ERROR); // if we encounter an invalid token altogether
       exit(1);
     }
 
+    if(inst.count >= 5){
+      fprintf(stderr, ERROR_FORMAT, filepath, linenum, 0, TOO_MANY_TOKS_ERROR);
+      exit(1);
+    }
     inst.tokens[inst.count++] = tok;
   }
   return inst;
 }
 
-opcode generate(instruction_t i, char* filename)
+opcode_t generate(instruction_t i, char* filename)
 {
-  opcode op;
+  opcode_t op;
 
-  TokenType tok_type = i.tokens[0].type;
-  switch(i.tokens[0].type){
+  token_kind_t tok_kind = i.tokens[0].kind;
+  switch(tok_kind){
   case TokenMov:
     // MOV I, NNN
     if(strncmp(i.tokens[1].data, "I", 1) == 0 &&
-       i.tokens[2].type == TokenAddr){
+       i.tokens[2].kind == TokenAddr){
       op.start = 0xA;
       op.address = (str_to_hex(i.tokens[2].data, 0) & 0xFFF);
       break;
     }
     // MOV Vx, #NN
-    if(i.tokens[1].type == TokenReg &&
-       i.tokens[2].type == TokenConst){
+    if(i.tokens[1].kind == TokenReg &&
+       i.tokens[2].kind == TokenConst){
       op.start = 0x6;
       op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
       op.const8 = (str_to_hex(&i.tokens[2].data[1], 0) & 0xFF);
       break;
     }
     // MOV Vx, Vy
-    if(i.tokens[1].type == TokenReg &&
-       i.tokens[2].type == TokenReg){
+    if(i.tokens[1].kind == TokenReg &&
+       i.tokens[2].kind == TokenReg){
       op.start = 0x8;
       op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
       op.y = (str_to_hex(&i.tokens[2].data[1], 16) & 0xF);
@@ -268,23 +272,23 @@ opcode generate(instruction_t i, char* filename)
     }
   case TokenAdd:
     if(strncmp(i.tokens[1].data, "I", 1) == 0 &&
-       i.tokens[2].type == TokenReg){
+       i.tokens[2].kind == TokenReg){
       op.start = 0xF;
       op.x = (str_to_hex(&i.tokens[2].data[1], 16) & 0xFFF);
       op.const8 = 0x1E;
       break;
     }
     // ADD Vx, #NN
-    if(i.tokens[1].type == TokenReg &&
-       i.tokens[2].type == TokenConst){
+    if(i.tokens[1].kind == TokenReg &&
+       i.tokens[2].kind == TokenConst){
       op.start = 0x7;
       op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
       op.const8 = (str_to_hex(&i.tokens[2].data[1], 0) & 0xFF);
       break;
     }
     // ADD Vx, Vy
-    if(i.tokens[1].type == TokenReg &&
-       i.tokens[2].type == TokenReg){
+    if(i.tokens[1].kind == TokenReg &&
+       i.tokens[2].kind == TokenReg){
       op.start = 0x8;
       op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
       op.y = (str_to_hex(&i.tokens[2].data[1], 16) & 0xF);
@@ -300,35 +304,35 @@ opcode generate(instruction_t i, char* filename)
   case TokenIfne:
     // IFE Vx, #NN
     // IFNE Vx, #NN
-    if(i.tokens[1].type == TokenReg &&
-       i.tokens[2].type == TokenConst){
-      if(tok_type == TokenIfe)  op.start = 0x3;
-      if(tok_type == TokenIfne) op.start = 0x4;
+    if(i.tokens[1].kind == TokenReg &&
+       i.tokens[2].kind == TokenConst){
+      if(tok_kind == TokenIfe)  op.start = 0x3;
+      if(tok_kind == TokenIfne) op.start = 0x4;
       op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
       op.const8 = (str_to_hex(&i.tokens[2].data[1], 0) & 0xFF);
       break;
     }
     // IFE Vx, Vy
     // IFNE Vx, Vy
-    if(i.tokens[1].type == TokenReg &&
-       i.tokens[2].type == TokenReg){
-      if(tok_type == TokenIfe)  op.start = 0x5;
-      if(tok_type == TokenIfne) op.start = 0x9;
+    if(i.tokens[1].kind == TokenReg &&
+       i.tokens[2].kind == TokenReg){
+      if(tok_kind == TokenIfe)  op.start = 0x5;
+      if(tok_kind == TokenIfne) op.start = 0x9;
       op.x = (str_to_hex(&i.tokens[1].data[1], 16) & 0xF);
       op.y = (str_to_hex(&i.tokens[2].data[1], 16) & 0xF);
       op.end = 0x0;
-
+      break;
     }
   case TokenB:
   case TokenBa:
   case TokenCall:
-    if(i.tokens[1].type != TokenAddr){
+    if(i.tokens[1].kind != TokenAddr){
       fprintf(stderr, ERROR_FORMAT, filename, i.tokens[1].line, i.tokens[1].col, INVALID_COMP_ERROR);
       exit(1);
     }
-    if(tok_type == TokenB)    op.start = 0x1;
-    if(tok_type == TokenBa)   op.start = 0xB;
-    if(tok_type == TokenCall) op.start = 0x2;
+    if(tok_kind == TokenB)    op.start = 0x1;
+    if(tok_kind == TokenBa)   op.start = 0xB;
+    if(tok_kind == TokenCall) op.start = 0x2;
     op.address = (str_to_hex(i.tokens[1].data, 0) & 0xFFF);
     break;
   case TokenRet:
@@ -404,22 +408,22 @@ int main(int argc, char **argv)
 
   size_t bytes = 0;
 
-  while((linelen = getline(&line, &linecap, input_f) != -1)){
+  while((linelen = getline(&line, &linecap, input_f)) != -1){
     linenum++;
     if(strncmp(line, "\n", 1) == 0 || strncmp(line, "\r\n", 2) == 0) continue; //skip newlines
     instruction_t inst = lex(line, input_path, linenum);
-    if(inst.tokens[0].type == TokenLabel ||
-       inst.tokens[0].type == TokenComment) continue;
-    opcode op = generate(inst, input_path);
+    if(inst.tokens[0].kind == TokenLabel ||
+       inst.tokens[0].kind == TokenComment) continue;
+    opcode_t op = generate(inst, input_path);
     if(debug){
       fprintf(stderr, "Instruction %d {\n", linenum);
       for(int i = 0; i < inst.count; i++){
 	token_t tok = inst.tokens[i];
 
-	fprintf(stderr, "  Token %d: %s of type %s\n", i+1, tok.data,
-		token_to_str(tok.type));
-	if(tok.type == TokenAddr || tok.type == TokenConst){
-	  fprintf(stderr, "Value of %s: %d.\n", tok.data, tok.type == TokenConst ? str_to_hex(&tok.data[1], 0) : str_to_hex(tok.data, 0));
+	fprintf(stderr, "  Token %d: %s of kind %s\n", i+1, tok.data,
+		token_to_str(tok.kind));
+	if(tok.kind == TokenAddr || tok.kind == TokenConst){
+	  fprintf(stderr, "Value of %s: %d.\n", tok.data, tok.kind == TokenConst ? str_to_hex(&tok.data[1], 0) : str_to_hex(tok.data, 0));
 	}
       }
       fprintf(stderr, "Opcode: %#X\n", op);
