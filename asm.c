@@ -78,9 +78,9 @@ uint16_t str_to_hex(char *str, int base)
   long int decimal = strtol(str, &endptr, base);
 
   // bounds-checking: constants and addresses can't go above 0xFFF
-  if(decimal > 0xFFF){
-    str = NULL;
-  }
+  //if(decimal > 0xFFF){
+  //  str = NULL;
+  //}
 
   hex = (uint16_t) decimal;
   return hex;
@@ -119,7 +119,8 @@ void parse_labels(char *filepath)
       linenum++;
       continue;
     }
-    if(line[0] != ';') address += 2;
+    // TODO: fix bug
+    if(line[0] != ';' && !is_empty_line(line)) address += 2;
     linenum++;
   }
   fclose(src_fd);
@@ -182,7 +183,7 @@ instruction_t lex(char *line, char *filepath, int linenum)
       tok.data = data;
       break;
     case '#':
-      if(str_to_hex(data, 0) > 0xFF){
+      if(str_to_hex(&data[1], 0) > 0xFF){
 	fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, CONSTANT8_SIZE_ERROR);
 	exit(1);
       }

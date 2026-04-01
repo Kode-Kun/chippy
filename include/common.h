@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define MEM_SIZE          3584
 
@@ -137,5 +138,6 @@ int load_rom(char *filepath, size_t *filesize, uint8_t *mem);
 uint16_t fetch(uint8_t *mem, uint16_t *PC);
 uint8_t write_be16(FILE *f, uint16_t v);
 char *token_to_str(TokenType t);
+bool is_empty_line(char *l);
 
 #endif

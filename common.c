@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdbool.h>
+#include <ctype.h>
 
 #include "common.h"
 
@@ -64,6 +66,16 @@ uint8_t write_be16(FILE *f, uint16_t v)
   if(fwrite(be, 1, 2, f) != 2) return 1;
   return 0;
 }
+
+bool is_empty_line(char *l)
+{
+  bool b = true;
+  for(int i = 0; l[i] != '\0'; i++){
+    if(!isspace(l[i])) b = false;
+  }
+  return b;
+}
+
 
 char *token_to_str(TokenType t)
 {
