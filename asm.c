@@ -43,7 +43,7 @@ void free_symb(void)
   symbol_table.size = 0;
 }
 
-void append_symb(char* symb)
+void append_symbol(char* symb)
 {
   symbol_table.symbols = realloc(symbol_table.symbols, (symbol_table.size + 1) * sizeof(char*));
 
@@ -59,7 +59,7 @@ void append_symb(char* symb)
   symbol_table.size++;
 }
 
-char *get_symb(char *query)
+char *get_symbol(char *query)
 {
   int len = strlen(query);
   for(size_t i = 0; i < symbol_table.size; i++){
@@ -107,13 +107,13 @@ void parse_labels(char *filepath)
       char *l = malloc(LABEL_MAX_SIZE + 1);
       strncpy(l, line, LABEL_MAX_SIZE + 1);
       char *label = strtok(l, sep);
-      if(get_symb(label) != NULL){
+      if(get_symbol(label) != NULL){ // if label is defined more than once
 	fprintf(stderr, ERROR_FORMAT, filepath, linenum, 0, LABEL_ERROR);
 	exit(1);
       }
       char *symbol = malloc(LABEL_MAX_SIZE + 7); // 7 to account for the :0xNNN that goes after the label
       snprintf(symbol, LABEL_MAX_SIZE + 7, "%s:%#X", label, address);
-      append_symb(symbol);
+      append_symbol(symbol);
       free(l);
       free(symbol);
       linenum++;
@@ -158,12 +158,12 @@ instruction_t lex(char *line, char *filepath, int linenum)
 	tok.data = data;
       } else{
 	tok.kind = TokenAddr;
-	char *addr = get_symb(data);
+	char *addr = get_symbol(data);
 	if(addr == NULL){  // if label being called doesn't exist in symbol table
 	  fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, LABEL_UNKNOWN_ERROR);
 	  exit(1);
 	}
-	tok.data = get_symb(data);
+	tok.data = get_symbol(data);
       }
       break;
     case 'V':
@@ -183,7 +183,7 @@ instruction_t lex(char *line, char *filepath, int linenum)
       tok.data = data;
       break;
     case '#':
-      if(str_to_hex(data, 0) > 0xFF){
+      if(str_to_hex(data, 0) > 0xFF){ // if data provided can't be represented in 8 bits
 	fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, CONSTANT8_SIZE_ERROR);
 	exit(1);
       }
@@ -191,12 +191,12 @@ instruction_t lex(char *line, char *filepath, int linenum)
       tok.data = data;
       break;
     case '0':
-      if(data[1] != 'x' && data[1] != 'X' &&
+      if(data[1] != 'x' && data[1] != 'X' && // if address is provided in a format that isn't hex or binary
 	 data[1] != 'b' && data[1] != 'B'){
 	fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, ADDRESS_NOTATION_ERROR);
 	exit(1);
       }
-      if(str_to_hex(data, 0) > 0xFFF){
+      if(str_to_hex(data, 0) > 0xFFF){ // if address goes out of bounds
 	fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, ADDRESS_BOUNDS_ERROR);
 	exit(1);
       }
@@ -219,13 +219,12 @@ instruction_t lex(char *line, char *filepath, int linenum)
       }
     }
 
-    // if we still didn't get a match, return unkown error
-    if(tok.kind == TokenNull && tok.data == NULL){
+    if(tok.kind == TokenNull && tok.data == NULL){ // if we still didn't get a match, return unkown error
       fprintf(stderr, ERROR_FORMAT, filepath, tok.line, tok.col, UNKNOWN_ERROR); // if we encounter an invalid token altogether
       exit(1);
     }
 
-    if(inst.count >= 5){
+    if(inst.count >= 5){ // if instruction has too many tokens (max is 4, +1 for comment)
       fprintf(stderr, ERROR_FORMAT, filepath, linenum, 0, TOO_MANY_TOKS_ERROR);
       exit(1);
     }
@@ -265,8 +264,7 @@ opcode_t generate(instruction_t i, char* filename)
       op.end = 0x0;
       break;
     }
-    else{
-      // invalid operation structure
+    else{ // invalid operation structure
       fprintf(stderr, ERROR_FORMAT, filename, i.tokens[1].line, i.tokens[1].col, INVALID_COMP_ERROR);
       exit(1);
     }
@@ -295,8 +293,7 @@ opcode_t generate(instruction_t i, char* filename)
       op.end = 0x4;
       break;
     }
-    else{
-      // invalid operation structure
+    else{ // invalid operation structure
       fprintf(stderr, ERROR_FORMAT, filename, i.tokens[1].line, i.tokens[1].col, INVALID_COMP_ERROR);
       exit(1);
     }
@@ -326,7 +323,7 @@ opcode_t generate(instruction_t i, char* filename)
   case TokenB:
   case TokenBa:
   case TokenCall:
-    if(i.tokens[1].kind != TokenAddr){
+    if(i.tokens[1].kind != TokenAddr){ // These instructions only take an address as argument
       fprintf(stderr, ERROR_FORMAT, filename, i.tokens[1].line, i.tokens[1].col, INVALID_COMP_ERROR);
       exit(1);
     }
